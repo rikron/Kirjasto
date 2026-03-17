@@ -11,11 +11,11 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("main.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("kirjat.fxml"));
         Scene scene = new Scene(loader.load());
 
         stage.setScene(scene);
-        stage.setTitle("MyApp");
+        stage.setTitle("Kirjat");
         stage.show();
     }
 

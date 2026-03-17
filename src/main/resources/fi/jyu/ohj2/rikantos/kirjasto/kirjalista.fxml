@@ -1,37 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="400.0" prefWidth="400.0" spacing="20.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fi.jyu.ohj2.rikantos.kirjasto.controller.KirjalistaController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-    </padding>
-
-    <Label text="Lainattavissa" />
-   <TableView fx:id="lainattavissaTable" prefHeight="200.0" prefWidth="200.0">
-     <columns>
-       <TableColumn prefWidth="75.0" text="C1" />
-       <TableColumn prefWidth="75.0" text="C2" />
-     </columns>
-   </TableView>
-   <Label text="Lainaamasi" />
-   <TableView fx:id="lainaamatTable" prefHeight="200.0" prefWidth="200.0">
-     <columns>
-       <TableColumn prefWidth="75.0" text="C1" />
-       <TableColumn prefWidth="75.0" text="C2" />
-     </columns>
-   </TableView>
-   <HBox alignment="TOP_RIGHT" spacing="10.0">
-      <children>
-         <Button fx:id="siirryKirjaListaanBtn" mnemonicParsing="false" onMouseClicked="#handleSiirryKirjalistaan" text="Siirry kirjalistaan" />
-          <Button fx:id="lainaaKirjaBtn" onMouseClicked="#handleLainaaKirja" text="Lainaa" />
-         <Button fx:id="palautaKirjaBtn" mnemonicParsing="false" onMouseClicked="#handlePalautaKirja" text="Palauta" />
-      </children>
-   </HBox>
-</VBox>
+<HBox xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fi.jyu.ohj2.rikantos.kirjasto.controller.KirjalistaController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="500.0" prefWidth="286.0" spacing="10.0" HBox.hgrow="ALWAYS">
+         <children>
+            <Label text="Nimi" />
+            <TextField fx:id="nimiTxt" VBox.vgrow="NEVER" />
+            <Label text="Tekijä" />
+            <TextField fx:id="tekijaTxt" VBox.vgrow="NEVER" />
+            <Label text="ISBN" />
+            <TextField fx:id="isbnTxt" VBox.vgrow="NEVER" />
+            <HBox alignment="TOP_RIGHT" spacing="10.0">
+               <children>
+                  <Button fx:id="lisaaKirja" mnemonicParsing="false" onMouseClicked="#handleLisaaKirja" text="Lisää" />
+                  <Button fx:id="poistaKirja" mnemonicParsing="false" onMouseClicked="#handlePoistaKirja" text="Poista" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <VBox alignment="CENTER" spacing="20.0">
+         <children>
+            <Label alignment="TOP_LEFT" text="Kirjat" />
+            <TableView fx:id="kirjaLista">
+              <columns>
+                <TableColumn fx:id="nimiColumn" prefWidth="75.0" text="Nimi" />
+                <TableColumn fx:id="tekijaColumn" prefWidth="75.0" text="Tekijä" />
+                  <TableColumn fx:id="isbnColumn" prefWidth="75.0" text="ISBN" />
+                  <TableColumn fx:id="lainattuColumn" prefWidth="75.0" text="Lainattu" />
+                  <TableColumn fx:id="lainausmaaraColumn" prefWidth="92.5" text="Lainausmäärä" />
+              </columns>
+            </TableView>
+            <HBox alignment="TOP_CENTER" prefHeight="50.0" VBox.vgrow="NEVER">
+               <children>
+                  <Button fx:id="siirryLainaamaan" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#handleSiirryLainauksiin" text="Siirry lainaamaan" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</HBox>

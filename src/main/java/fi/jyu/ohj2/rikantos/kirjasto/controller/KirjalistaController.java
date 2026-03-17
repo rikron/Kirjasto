@@ -1,40 +1,77 @@
 package fi.jyu.ohj2.rikantos.kirjasto.controller;
 
+import fi.jyu.ohj2.rikantos.kirjasto.App;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class KirjalistaController {
 
     @FXML
-    private Button lainaaKirjaBtn;
+    private TableColumn<?, ?> isbnColumn;
 
     @FXML
-    private TableView<?> lainaamatTable;
+    private TextField isbnTxt;
 
     @FXML
-    private TableView<?> lainattavissaTable;
+    private TableView<?> kirjaLista;
 
     @FXML
-    private Button palautaKirjaBtn;
+    private TableColumn<?, ?> lainattuColumn;
 
     @FXML
-    private Button siirryKirjaListaanBtn;
+    private TableColumn<?, ?> lainausmaaraColumn;
 
     @FXML
-    void handleLainaaKirja(MouseEvent event) {
+    private Button lisaaKirja;
+
+    @FXML
+    private TableColumn<?, ?> nimiColumn;
+
+    @FXML
+    private TextField nimiTxt;
+
+    @FXML
+    private Button poistaKirja;
+
+    @FXML
+    private Button siirryLainaamaan;
+
+    @FXML
+    private TableColumn<?, ?> tekijaColumn;
+
+    @FXML
+    private TextField tekijaTxt;
+
+    @FXML
+    void handleLisaaKirja(MouseEvent event) {
 
     }
 
     @FXML
-    void handlePalautaKirja(MouseEvent event) {
+    void handlePoistaKirja(MouseEvent event) {
 
     }
 
     @FXML
-    void handleSiirryKirjalistaan(MouseEvent event) {
-
+    void handleSiirryLainauksiin(MouseEvent event) {
+         sulje();
     }
 
+    private void sulje() {
+        // Haetaan Scene-olio kirjalista komponentista
+        Scene scene = isbnTxt.getScene();
+        Stage ikkuna = (Stage) scene.getWindow();
+        ikkuna.close();
+    }
 }

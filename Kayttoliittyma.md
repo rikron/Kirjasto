@@ -2,7 +2,6 @@
 
 ## Päänäkymä
 
-![Näkymän karkea ulkoasu kuvana (wireframe.cc, DrawIO, Paint tai paperilla piirretty)](nakyma1.jpg)
 ![Päänäkymä kuva](img_1.png)
 **Olennaiset toiminnot**
 

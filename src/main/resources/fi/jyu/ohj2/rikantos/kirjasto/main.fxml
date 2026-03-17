@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fi.jyu.ohj2.rikantos.kirjasto.MainController">
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="400.0" spacing="20.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fi.jyu.ohj2.rikantos.kirjasto.MainController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Hello, JavaFX!"/>
-    <Button text="Click Me!"/>
+    <Label text="Lainattavissa" />
+   <TableView fx:id="lainattavissaLista" prefHeight="200.0" prefWidth="200.0">
+     <columns>
+       <TableColumn prefWidth="75.0" text="C1" />
+       <TableColumn prefWidth="75.0" text="C2" />
+     </columns>
+   </TableView>
+   <Label text="Lainaamasi" />
+   <TableView fx:id="lainaamatLista" prefHeight="200.0" prefWidth="200.0">
+     <columns>
+       <TableColumn prefWidth="75.0" text="C1" />
+       <TableColumn prefWidth="75.0" text="C2" />
+     </columns>
+   </TableView>
+   <HBox alignment="TOP_RIGHT" spacing="10.0">
+      <children>
+         <Button fx:id="siirryKirjaListaan" mnemonicParsing="false" text="Lisää kirja" />
+          <Button fx:id="lainaaKirja" text="Lainaa" />
+         <Button fx:id="palautaKirja" mnemonicParsing="false" text="Palauta" />
+      </children>
+   </HBox>
 </VBox>

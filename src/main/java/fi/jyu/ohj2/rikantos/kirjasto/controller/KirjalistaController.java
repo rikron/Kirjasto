@@ -1,7 +1,10 @@
 package fi.jyu.ohj2.rikantos.kirjasto.controller;
 
+import fi.jyu.ohj2.rikantos.kirjasto.Main;
 import fi.jyu.ohj2.rikantos.kirjasto.model.Kirja;
 import fi.jyu.ohj2.rikantos.kirjasto.model.Kirjakokoelma;
+import fi.jyu.ohj2.rikantos.kirjasto.model.Lainakokoelma;
+import fi.jyu.ohj2.rikantos.kirjasto.model.Lainaus;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -60,15 +63,18 @@ public class KirjalistaController implements Initializable {
 
     @FXML
     void handlePoistaKirja(MouseEvent event) {
-
+        poistaValittu();
     }
 
     @FXML
     void handleSiirryLainauksiin(MouseEvent event) {
-         sulje();
+        sulje();
     }
 
     private Kirjakokoelma kirjakokoelma = new Kirjakokoelma();
+    private Lainakokoelma lainakokoelma = new Lainakokoelma();
+
+    private ObservableList<Lainaus> lainaukset = lainakokoelma.getLainaukset();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -92,6 +98,8 @@ public class KirjalistaController implements Initializable {
         lainattuSarake.setCellValueFactory(cd -> cd.getValue().lainattuProperty());
         kirjaTaulu.getColumns().add(lainattuSarake);
 
+
+
         kirjaTaulu.setRowFactory(kirja -> {
             TableRow<Kirja> row = new TableRow<>();
 
@@ -100,7 +108,6 @@ public class KirjalistaController implements Initializable {
 
         kirjakokoelma.lataa();
 
-        lisaaKirja.setOnAction(event -> lisaaKirja());
     }
 
     private void lisaaKirja() {
@@ -126,6 +133,15 @@ public class KirjalistaController implements Initializable {
         nimiTxt.clear();
         tekijaTxt.clear();
         isbnTxt.clear();
+    }
+
+    /**
+     * Poistetaan hiirellä kirjaTaulusta valittu kirja painamalla poista painiketta
+     */
+    private void poistaValittu() {
+        Kirja valittuKirja = kirjaTaulu.getSelectionModel().getSelectedItem();
+        lainaukset.removeIf(lainaus -> lainaus.getKirja() == valittuKirja);
+        kirjakokoelma.poistaKirja(valittuKirja);
     }
 
     private void sulje() {

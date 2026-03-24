@@ -2,11 +2,13 @@ package fi.jyu.ohj2.rikantos.kirjasto.model;
 
 import javafx.beans.property.*;
 
+import java.util.List;
+
 public class Kirja {
     private final StringProperty nimi = new SimpleStringProperty("");
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty isbn = new SimpleStringProperty("");
-    private final ListProperty<Lainaus> lainaukset = new SimpleListProperty<>();
+    //private List<Lainaus> lainaukset;
     private BooleanProperty lainattu = new SimpleBooleanProperty(false);
 
     @SuppressWarnings("unused")
@@ -69,7 +71,18 @@ public class Kirja {
     }
 
     //public List<Lainaus> getLainaukset() {return lainaukset;}
-    //public void setLainaukset(List<Lainaus> lainaukset) {this.lainaukset = lainaukset;}
+
+    public void setLainaukset(List<Lainaus> lainaukset) {
+        //this.lainaukset = lainaukset;
+    }
+    /**
+     * Lisää merkinnän kirjan lainauksia seuraavaan listaan Lainus objektista
+     * @param lainaus
+     */
+    public void lisaaLainaus(Lainaus lainaus) {
+        if (lainaus == null) return;
+        //lainaukset.add(lainaus);
+    }
 
     @Override
     public String toString() {

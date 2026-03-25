@@ -27,9 +27,6 @@ import java.util.ResourceBundle;
 public class KirjalistaController implements Initializable {
 
     @FXML
-    private TableColumn<KirjaModel, String> isbnColumn;
-
-    @FXML
     private TextField isbnTxt;
 
     @FXML
@@ -64,6 +61,9 @@ public class KirjalistaController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Lajitellaan kirjat tekijän nimen mukaan
+        // TODO - Voisi jaotella nimet etunimi ja sukunimi ja lajitella sukunimen mukaan
+        // TODO - Ilmeisesti SortedList ei kelpaa tableview:lle??
         SortedList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
         kirjaTaulu.setItems(kirjatLajiteltu);
         kirjaTaulu.setEditable(true);
@@ -84,8 +84,6 @@ public class KirjalistaController implements Initializable {
         lainattuSarake.setCellValueFactory(cd -> cd.getValue().lainattuProperty());
         kirjaTaulu.getColumns().add(lainattuSarake);
 
-
-
         kirjaTaulu.setRowFactory(kirja -> {
             TableRow<KirjaModel> row = new TableRow<>();
 
@@ -95,20 +93,22 @@ public class KirjalistaController implements Initializable {
                 // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
                 if (event.getButton().equals(MouseButton.PRIMARY) &&
                         event.getClickCount() == 2 && !row.isEmpty()) {
-                    // Haetaan riviä vastaava Tehtava-olio
+                    // Haetaan riviä vastaava kirja
                     KirjaModel valittuKirja = row.getItem();
-                    // Avataan muokkausdialogi
+                    // Avataan lainahistoria dialogi, jolle syötetään valittu kirja
                     avaaLainaHistoria(valittuKirja);
                 }
             });
-
             return row;
         });
-
+        // Ladataan kirjakokoelman tiedot tiedostosta
         kirjakokoelmaModel.lataa();
-
     }
 
+    /**
+     * Lisätään kirja kirjakokoelmaan. Syötteet tarkastetaan tässä vaiheessa.
+     * Syötekentät tyhjennetään
+     */
     private void lisaaKirja() {
         String nimi = nimiTxt.getText();
         String tekija = tekijaTxt.getText();
@@ -139,10 +139,16 @@ public class KirjalistaController implements Initializable {
      */
     private void poistaValittu() {
         KirjaModel valittuKirja = kirjaTaulu.getSelectionModel().getSelectedItem();
+        // Poistetaan vain jos valitun kirjan nimi on sama kuin lainauksissa olevan nimi
+        // TODO - ISBN voisi olla parempi tarkastettava
         lainaukset.removeIf(lainaus -> Objects.equals(lainaus.getKirjaNimi(), valittuKirja.getNimi()));
         kirjakokoelmaModel.poistaKirja(valittuKirja);
     }
 
+    /**
+     * Metodi, joka käynnistää lainaushistoria näkymän
+     * @param valittuKirja Kirja, joka välitetään kontrollerille
+     */
     private void avaaLainaHistoria(KirjaModel valittuKirja) {
         try {
             /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("lainaushistoria.fxml"));

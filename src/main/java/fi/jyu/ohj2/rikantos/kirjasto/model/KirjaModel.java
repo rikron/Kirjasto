@@ -14,10 +14,13 @@ public class KirjaModel {
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty isbn = new SimpleStringProperty("");
     private List<LainausModel> lainaukset = new ArrayList<>();
-    @JsonIgnore
-    private ListProperty<LainausModel> observableLainaukset = new SimpleListProperty<>(FXCollections.observableArrayList());
     private BooleanProperty lainattu = new SimpleBooleanProperty(false);
 
+    // Jätetään observableLainaukset Jacksonin ulkopuolelle, sillä se ei ymmärrä sen tyyppiä
+    @JsonIgnore
+    private ListProperty<LainausModel> observableLainaukset = new SimpleListProperty<>(FXCollections.observableArrayList());
+
+    // Jackson vaattii myös tyhjän version mallista
     @SuppressWarnings("unused")
     public KirjaModel() {
     }
@@ -29,95 +32,56 @@ public class KirjaModel {
         setLainattu(false);
     }
 
-    public String getNimi() {
-        return this.nimi.get();
-    }
+    // Getterit/setterit
+    public String getNimi() {return this.nimi.get();}
+    public void setNimi(String nimi) {this.nimi.set(nimi);}
+    public StringProperty nimiProperty() {return this.nimi;}
 
-    public void setNimi(String nimi) {
-        this.nimi.set(nimi);
-    }
+    public String getTekija() {return this.tekija.get();}
+    public void setTekija(String tekija) {this.tekija.set(tekija);}
+    public StringProperty tekijaProperty() {return this.tekija;}
 
-    public StringProperty nimiProperty() {
-        return this.nimi;
-    }
+    public String getIsbn() {return this.isbn.get();}
+    public void setIsbn(String isbn) {this.isbn.set(isbn);}
+    public StringProperty isbnProperty() {return this.isbn;}
 
-    public String getTekija() {
-        return this.tekija.get();
-    }
+    public Boolean getLainattu() {return this.lainattu.get();}
+    public void setLainattu(boolean lainattu) {this.lainattu.set(lainattu);}
+    public BooleanProperty lainattuProperty() {return this.lainattu;}
 
-    public void setTekija(String tekija) {
-        this.tekija.set(tekija);
-    }
+    public void setObservableLainaukset(ObservableList<LainausModel> observableLainaukset) {this.observableLainaukset.set(observableLainaukset);}
+    public ObservableList<LainausModel> getObservableLainaukset() {return observableLainaukset.get();}
+    public ListProperty<LainausModel> observableLainauksetProperty() {return observableLainaukset;}
 
-    public StringProperty tekijaProperty() {
-        return this.tekija;
-    }
-
-    public String getIsbn() {
-        return this.isbn.get();
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn.set(isbn);
-    }
-
-    public StringProperty isbnProperty() {
-        return this.isbn;
-    }
-
-    public Boolean getLainattu() {
-        return this.lainattu.get();
-    }
-
-    public void setLainattu(boolean lainattu) {
-        this.lainattu.set(lainattu);
-    }
-
-    public BooleanProperty lainattuProperty() {
-        return this.lainattu;
-    }
-
-    // Call this after deserialization
-    public void initObservableList() {
-        observableLainaukset.setAll(lainaukset);
-    }
-
-    // JSON getters/setters
     public List<LainausModel> getLainaukset() { return lainaukset; }
 
     public void setLainaukset(List<LainausModel> lainaukset) {
         this.lainaukset = lainaukset;
-        initObservableList();
+        asetaObservableLainaukset();
     }
-
-    public void setObservableLainaukset(ObservableList<LainausModel> observableLainaukset) {
-        this.observableLainaukset.set(observableLainaukset);
-    }
-
-    // JavaFX property getter
-    public ListProperty<LainausModel> observableLainauksetProperty() {
-        return observableLainaukset;
-    }
-
-    public ObservableList<LainausModel> getObservableLainaukset() {
-        IO.println(observableLainaukset);
-        IO.println(lainaukset);
-        return observableLainaukset.get();
+    /**
+     * Asetetaan observableListaan lainaukset, sillä ne eivät
+     * päivity automaattisesti Jacksonin toimesta sinne
+     */
+    public void asetaObservableLainaukset() {
+        observableLainaukset.setAll(lainaukset);
     }
 
     /**
-     * Lisää merkinnän kirjan lainauksia seuraavaan listaan Lainus objektista
+     * Lisää tämän kirjan lainaukset listaan merkinnän uudesta lainauksesta ja
+     * samalla kirjoittaa ObservableList tyyppiseen ListProperty listaan
      * @param lainaus
      */
     public void lisaaLainauksiin(LainausModel lainaus) {
         if (lainaus == null) return;
-        IO.println(lainaus);
-        IO.println(lainaukset);
         lainaukset.add(lainaus);
-        IO.println(lainaukset);
-        initObservableList();
+        asetaObservableLainaukset();
     }
 
+    /**
+     * toString metodi kirjalle, debuggaukseen kätevä.
+     * @return
+     */
     @Override
     public String toString() {
         return getNimi() + " : " + getTekija() + " : " + getIsbn();

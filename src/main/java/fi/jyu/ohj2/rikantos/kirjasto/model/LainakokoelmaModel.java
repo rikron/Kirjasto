@@ -37,10 +37,16 @@ public class LainakokoelmaModel {
         return lainaukset;
     }
 
+    /**
+     * Tallennetaan lainaukset tiedostoon
+     */
     public void tallenna() {
         mapper.writeValue(tiedostoPolku, lainaukset);
     }
 
+    /**
+     * Ladataan lainaukset tiedostosta, jos se on olemassa
+     */
     public void lataa() {
         if (Files.notExists(tiedostoPolku)) {
             return;
@@ -53,6 +59,11 @@ public class LainakokoelmaModel {
         }
     }
 
+    /**
+     * Lisää lainauksen lainakokoelmaan. Tarkastaa myös syötteiden eheyden
+     * @param kirja - KirjaModel tyypin kirja
+     * @param lainaajaNimi - Syötetty nimi
+     */
     public void lisaaLainaus(KirjaModel kirja, String lainaajaNimi) {
         if (lainaajaNimi == null || lainaajaNimi.isBlank() || kirja == null) {
             return;
@@ -66,6 +77,10 @@ public class LainakokoelmaModel {
         lainaukset.add(lainaus);
     }
 
+    /**
+     * Poistaa lainauksen kokoelmasta
+     * @param lainaus - LainausModel tyypin lainaus
+     */
     public void poistaLainaus(LainausModel lainaus) {
         if (lainaus == null) {
             return;

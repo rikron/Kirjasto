@@ -31,14 +31,21 @@ public class KirjakokoelmaModel {
         });
     }
 
+
     public ObservableList<KirjaModel> getKirjat() {
         return kirjat;
     }
 
+    /**
+     * Tallentaa kirjakokoelmaan lisätyt kirjat tiedostoon
+     */
     public void tallenna() {
         mapper.writeValue(tiedostoPolku, kirjat);
     }
 
+    /**
+     * Lataa kirjakokoelman tiedot tiedostosta, jos se on olemassa
+     */
     public void lataa() {
         if (Files.notExists(tiedostoPolku)) {
             return;
@@ -48,13 +55,19 @@ public class KirjakokoelmaModel {
             kirjat.clear();
             kirjat.addAll(kaikkiKirjat);
             for (KirjaModel kirja : kirjat) {
-                kirja.initObservableList();
+                kirja.asetaObservableLainaukset();
             }
         } catch (JacksonException je) {
             IO.println("Kirjakokoelma - JSONin lukeminen epäonnistui: " + je.getMessage());
         }
     }
 
+    /**
+     * Lisätään kirja kirjakokoelmaan. Tarkastetaan myös syötteet tässä vaiheessa
+     * @param nimi - Kirjan nimi
+     * @param tekija - Kirjan tekijä
+     * @param isbn - ISBN
+     */
     public void lisaaKirja(String nimi, String tekija, String isbn) {
         if (nimi == null || nimi.isBlank() || tekija == null || tekija.isBlank() || isbn == null || isbn.isBlank()) {
             return;
@@ -67,6 +80,10 @@ public class KirjakokoelmaModel {
         kirjat.add(new KirjaModel(nimi, tekija, isbn));
     }
 
+    /**
+     * Poistaa kirjan kokoelmasta
+     * @param kirja - KirjaModel kirja
+     */
     public void poistaKirja(KirjaModel kirja) {
         if (kirja == null) {
             return;

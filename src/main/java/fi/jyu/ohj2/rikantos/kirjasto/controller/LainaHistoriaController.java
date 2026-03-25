@@ -2,7 +2,6 @@ package fi.jyu.ohj2.rikantos.kirjasto.controller;
 
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
-import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -22,10 +21,29 @@ public class LainaHistoriaController implements Initializable {
 
     KirjakokoelmaModel kirjakokoelma = new KirjakokoelmaModel();
 
-    private KirjaModel tarkasteltavaKirja = new KirjaModel();
+    private KirjaModel tarkasteltavaKirja;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+    }
+
+    /**
+     * Asettaa kontrollerin käsittelemän kirjan ja kutsuu taytaTaulukko metodia
+     * @param kirja Tarkasteltava kirja
+     */
+    public void setKirja(KirjaModel kirja) {
+        if (kirja == null) return;
+        this.tarkasteltavaKirja = kirja;
+        taytaTaulukko();
+    }
+
+    /**
+     * Kontrollerille tulee syöttää kirja, jonka historiaa tarkastellaan
+     * ennen tiedon tulostamista. Tämä metodi täyttää taulukon asetetun kirjan
+     * pohjalta
+     */
+    public void taytaTaulukko() {
+        tarkasteltavaKirja.asetaObservableLainaukset();
         ObservableList<LainausModel> lainauksetLajiteltu = tarkasteltavaKirja.getObservableLainaukset();
         IO.println(lainauksetLajiteltu);
         lainausHistoriaTable.setItems(lainauksetLajiteltu);
@@ -50,10 +68,6 @@ public class LainaHistoriaController implements Initializable {
         });
 
         kirjakokoelma.lataa();
-    }
-
-    public void setKirja(KirjaModel kirja) {
-        this.tarkasteltavaKirja = kirja;
     }
 }
 

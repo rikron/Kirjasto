@@ -79,9 +79,9 @@ public class MainController implements Initializable {
                 // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
                 if (event.getButton().equals(MouseButton.PRIMARY) &&
                 event.getClickCount() == 2 && !row.isEmpty()) {
-                    // Haetaan riviä vastaava Tehtava-olio
+                    // Haetaan riviä vastaava kirja
                     KirjaModel valittuKirja = row.getItem();
-                    // Avataan muokkausdialogi
+                    // Avataan lainahistoria dialogi, jolle syötetään valittu kirja
                     avaaLainaHistoria(valittuKirja);
                 }
             });
@@ -152,11 +152,18 @@ public class MainController implements Initializable {
         }
     }
 
+    /**
+     * Poistaa valitun lainauksen lainakokoelmasta
+     */
     private void poistaValittu() {
         LainausModel valittuLainaus = lainaamatTable.getSelectionModel().getSelectedItem();
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
     }
 
+    /**
+     * Siirretään lainattu kirja ylemmästä taulusta alempaan.
+     * Astetaan kirja KirjaModelissa lainautksi.
+     */
     private void lainaaKirja() {
         String nimi = lainaajanNimiTxt.getText();
         KirjaModel valittuKirja = lainattavissaTable.getSelectionModel().getSelectedItem();
@@ -177,6 +184,9 @@ public class MainController implements Initializable {
         lainakokoelmaModel.lisaaLainaus(valittuKirja, nimi);
     }
 
+    /**
+     * Palauttaa kirjan. Asettaa KirjaModelissa lainattu totuusarvon falseksi
+     */
     private void palautaKirja() {
         LainausModel valittuLainaus = lainaamatTable.getSelectionModel().getSelectedItem();
 
@@ -188,6 +198,10 @@ public class MainController implements Initializable {
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
     }
 
+    /**
+     * Avataan lainaushistoria näkymä
+     * @param valittuKirja - Kontrollerille syötetty valittu kirja
+     */
     private void avaaLainaHistoria(KirjaModel valittuKirja) {
         try {
             /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("lainaushistoria.fxml"));

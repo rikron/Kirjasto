@@ -1,45 +1,39 @@
 package fi.jyu.ohj2.rikantos.kirjasto.controller;
 
-import fi.jyu.ohj2.rikantos.kirjasto.Main;
-import fi.jyu.ohj2.rikantos.kirjasto.model.Kirja;
-import fi.jyu.ohj2.rikantos.kirjasto.model.Kirjakokoelma;
-import fi.jyu.ohj2.rikantos.kirjasto.model.Lainakokoelma;
-import fi.jyu.ohj2.rikantos.kirjasto.model.Lainaus;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
+import fi.jyu.ohj2.rikantos.kirjasto.App;
+import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
+import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
+import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
+import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class KirjalistaController implements Initializable {
 
     @FXML
-    private TableColumn<Kirja, String> isbnColumn;
+    private TableColumn<KirjaModel, String> isbnColumn;
 
     @FXML
     private TextField isbnTxt;
 
     @FXML
-    private TableView<Kirja> kirjaTaulu;
+    private TableView<KirjaModel> kirjaTaulu;
 
     @FXML
     private Button lisaaKirja;
@@ -49,9 +43,6 @@ public class KirjalistaController implements Initializable {
 
     @FXML
     private Button poistaKirja;
-
-    @FXML
-    private Button siirryLainaamaan;
 
     @FXML
     private TextField tekijaTxt;
@@ -66,47 +57,55 @@ public class KirjalistaController implements Initializable {
         poistaValittu();
     }
 
-    @FXML
-    void handleSiirryLainauksiin(MouseEvent event) {
-        sulje();
-    }
+    private KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel();
+    private LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel();
 
-    private Kirjakokoelma kirjakokoelma = new Kirjakokoelma();
-    private Lainakokoelma lainakokoelma = new Lainakokoelma();
-
-    private ObservableList<Lainaus> lainaukset = lainakokoelma.getLainaukset();
+    private ObservableList<LainausModel> lainaukset = lainakokoelmaModel.getLainaukset();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        SortedList<Kirja> kirjatLajiteltu = kirjakokoelma.getKirjat().sorted(Comparator.comparing(Kirja::getTekija));
+        SortedList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
         kirjaTaulu.setItems(kirjatLajiteltu);
         kirjaTaulu.setEditable(true);
         
-        TableColumn<Kirja, String> nimiSarake = new TableColumn<>("Nimi");
+        TableColumn<KirjaModel, String> nimiSarake = new TableColumn<>("Nimi");
         nimiSarake.setCellValueFactory(cd -> cd.getValue().nimiProperty());
         kirjaTaulu.getColumns().add(nimiSarake);
 
-        TableColumn<Kirja, String> tekijaSarake = new TableColumn<>("Tekija");
+        TableColumn<KirjaModel, String> tekijaSarake = new TableColumn<>("Tekija");
         tekijaSarake.setCellValueFactory(cd -> cd.getValue().tekijaProperty());
         kirjaTaulu.getColumns().add(tekijaSarake);
 
-        TableColumn<Kirja, String> isbnSarake = new TableColumn<>("ISBN");
+        TableColumn<KirjaModel, String> isbnSarake = new TableColumn<>("ISBN");
         isbnSarake.setCellValueFactory(cd -> cd.getValue().isbnProperty());
         kirjaTaulu.getColumns().add(isbnSarake);
 
-        TableColumn<Kirja, Boolean> lainattuSarake = new TableColumn<>("Lainattu");
+        TableColumn<KirjaModel, Boolean> lainattuSarake = new TableColumn<>("Lainattu");
         lainattuSarake.setCellValueFactory(cd -> cd.getValue().lainattuProperty());
         kirjaTaulu.getColumns().add(lainattuSarake);
 
 
 
         kirjaTaulu.setRowFactory(kirja -> {
-            TableRow<Kirja> row = new TableRow<>();
+            TableRow<KirjaModel> row = new TableRow<>();
+
+            // Lisätään uudelle riville tapahtumakäsittelijä klikkauksille
+            row.setOnMouseClicked(event -> {
+                // Jos oli hiiren ykkösnapin tuplaklikkaus,
+                // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
+                if (event.getButton().equals(MouseButton.PRIMARY) &&
+                        event.getClickCount() == 2 && !row.isEmpty()) {
+                    // Haetaan riviä vastaava Tehtava-olio
+                    KirjaModel valittuKirja = row.getItem();
+                    // Avataan muokkausdialogi
+                    avaaLainaHistoria(valittuKirja);
+                }
+            });
 
             return row;
         });
 
-        kirjakokoelma.lataa();
+        kirjakokoelmaModel.lataa();
 
     }
 
@@ -128,7 +127,7 @@ public class KirjalistaController implements Initializable {
             return;
         }
 
-        kirjakokoelma.lisaaKirja(nimi, tekija, isbn);
+        kirjakokoelmaModel.lisaaKirja(nimi, tekija, isbn);
 
         nimiTxt.clear();
         tekijaTxt.clear();
@@ -139,15 +138,32 @@ public class KirjalistaController implements Initializable {
      * Poistetaan hiirellä kirjaTaulusta valittu kirja painamalla poista painiketta
      */
     private void poistaValittu() {
-        Kirja valittuKirja = kirjaTaulu.getSelectionModel().getSelectedItem();
-        lainaukset.removeIf(lainaus -> lainaus.getKirja() == valittuKirja);
-        kirjakokoelma.poistaKirja(valittuKirja);
+        KirjaModel valittuKirja = kirjaTaulu.getSelectionModel().getSelectedItem();
+        lainaukset.removeIf(lainaus -> Objects.equals(lainaus.getKirjaNimi(), valittuKirja.getNimi()));
+        kirjakokoelmaModel.poistaKirja(valittuKirja);
     }
 
-    private void sulje() {
-        // Haetaan Scene-olio kirjalista komponentista
-        Scene scene = isbnTxt.getScene();
-        Stage ikkuna = (Stage) scene.getWindow();
-        ikkuna.close();
+    private void avaaLainaHistoria(KirjaModel valittuKirja) {
+        try {
+            /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("lainaushistoria.fxml"));
+            /* 1 */ Parent root = loader.load();
+            /* 1 */ Scene scene = new Scene(root);
+
+            LainaHistoriaController controller = loader.getController();
+            controller.setKirja(valittuKirja);
+
+            /* 2 */ Stage dialogi = new Stage();
+            /* 2 */ dialogi.setScene(scene);
+
+            /* 3 */ dialogi.setTitle("Kirjalista");
+            /* 3 */ dialogi.setMinWidth(400);
+            /* 3 */ dialogi.setMinHeight(300);
+            /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
+
+            /* 4 */ dialogi.showAndWait();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

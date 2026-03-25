@@ -27,13 +27,9 @@
       </VBox>
       <VBox alignment="CENTER" spacing="20.0">
          <children>
-            <Label alignment="TOP_LEFT" text="Kirjat" />
+            <Label alignment="CENTER" text="Kirjat" />
             <TableView fx:id="kirjaTaulu" />
-            <HBox alignment="TOP_CENTER" prefHeight="50.0" VBox.vgrow="NEVER">
-               <children>
-                  <Button fx:id="siirryLainaamaan" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#handleSiirryLainauksiin" text="Siirry lainaamaan" />
-               </children>
-            </HBox>
+            <HBox alignment="TOP_CENTER" prefHeight="50.0" VBox.vgrow="NEVER" />
          </children>
       </VBox>
    </children>

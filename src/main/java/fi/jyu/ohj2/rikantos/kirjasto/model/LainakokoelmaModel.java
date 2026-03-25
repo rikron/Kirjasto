@@ -12,12 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class Lainakokoelma {
-    Kirjakokoelma kirjakokoelma = new Kirjakokoelma();
+public class LainakokoelmaModel {
 
-    private final ObservableList<Lainaus> lainaukset = FXCollections.observableArrayList(
+    private final ObservableList<LainausModel> lainaukset = FXCollections.observableArrayList(
             lainaus -> new Observable[]{
-                    lainaus.kirjaProperty(),
+                    lainaus.tekijaProperty(),
+                    lainaus.kirjaNimiProperty(),
                     lainaus.lainaajaNimiProperty(),
                     lainaus.lainattuPvmProperty(),
                     lainaus.palautusPvmProperty(),
@@ -27,13 +27,13 @@ public class Lainakokoelma {
     private final Path tiedostoPolku = Path.of("lainaukset.json");
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public Lainakokoelma() {
-        lainaukset.addListener((ListChangeListener<Lainaus>) change -> {
+    public LainakokoelmaModel() {
+        lainaukset.addListener((ListChangeListener<LainausModel>) change -> {
             tallenna();
         });
     }
 
-    public ObservableList<Lainaus> getLainaukset() {
+    public ObservableList<LainausModel> getLainaukset() {
         return lainaukset;
     }
 
@@ -46,27 +46,27 @@ public class Lainakokoelma {
             return;
         }
         try {
-            List<Lainaus> kaikkiLainaukset = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            List<LainausModel> kaikkiLainaukset = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
             lainaukset.addAll(kaikkiLainaukset);
         } catch (JacksonException je) {
-            IO.println("JSONin lukeminen epäonnistui: " + je.getMessage());
+            IO.println("Lainakokoelma - JSONin lukeminen epäonnistui: " + je.getMessage());
         }
     }
 
-    public void lisaaLainaus(Kirja kirja, String lainaajaNimi) {
+    public void lisaaLainaus(KirjaModel kirja, String lainaajaNimi) {
         if (lainaajaNimi == null || lainaajaNimi.isBlank() || kirja == null) {
             return;
         }
 
         lainaajaNimi = lainaajaNimi.trim();
 
-        Lainaus lainaus = new Lainaus(kirja, lainaajaNimi);
+        LainausModel lainaus = new LainausModel(kirja, lainaajaNimi);
         // Lisätään kirjan historiaan merkintä lainauksesta
-        kirja.lisaaLainaus(lainaus);
+        kirja.lisaaLainauksiin(lainaus);
         lainaukset.add(lainaus);
     }
 
-    public void poistaLainaus(Lainaus lainaus) {
+    public void poistaLainaus(LainausModel lainaus) {
         if (lainaus == null) {
             return;
         }

@@ -12,21 +12,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class Kirjakokoelma {
-    private final ObservableList<Kirja> kirjat = FXCollections.observableArrayList(
-            kirja -> new Observable[]{kirja.nimiProperty(), kirja.tekijaProperty(), kirja.isbnProperty(), kirja.lainattuProperty()}
+public class KirjakokoelmaModel {
+    private final ObservableList<KirjaModel> kirjat = FXCollections.observableArrayList(
+            kirja -> new Observable[]{
+                    kirja.nimiProperty(),
+                    kirja.tekijaProperty(),
+                    kirja.observableLainauksetProperty(),
+                    kirja.isbnProperty(),
+                    kirja.lainattuProperty()}
     );
 
     private final Path tiedostoPolku = Path.of("kirjat.json");
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public Kirjakokoelma() {
-        kirjat.addListener((ListChangeListener<Kirja>) change -> {
+    public KirjakokoelmaModel() {
+        kirjat.addListener((ListChangeListener<KirjaModel>) change -> {
             tallenna();
         });
     }
 
-    public ObservableList<Kirja> getKirjat() {
+    public ObservableList<KirjaModel> getKirjat() {
         return kirjat;
     }
 
@@ -39,10 +44,14 @@ public class Kirjakokoelma {
             return;
         }
         try {
-            List<Kirja> kaikkiKirjat = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            List<KirjaModel> kaikkiKirjat = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            kirjat.clear();
             kirjat.addAll(kaikkiKirjat);
+            for (KirjaModel kirja : kirjat) {
+                kirja.initObservableList();
+            }
         } catch (JacksonException je) {
-            IO.println("JSONin lukeminen epäonnistui: " + je.getMessage());
+            IO.println("Kirjakokoelma - JSONin lukeminen epäonnistui: " + je.getMessage());
         }
     }
 
@@ -55,10 +64,10 @@ public class Kirjakokoelma {
         tekija = tekija.trim();
         isbn = isbn.trim();
 
-        kirjat.add(new Kirja(nimi, tekija, isbn));
+        kirjat.add(new KirjaModel(nimi, tekija, isbn));
     }
 
-    public void poistaKirja(Kirja kirja) {
+    public void poistaKirja(KirjaModel kirja) {
         if (kirja == null) {
             return;
         }

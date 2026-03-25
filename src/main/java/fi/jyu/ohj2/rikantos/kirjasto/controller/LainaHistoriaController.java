@@ -1,0 +1,59 @@
+package fi.jyu.ohj2.rikantos.kirjasto.controller;
+
+import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
+import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
+import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
+import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.ResourceBundle;
+
+public class LainaHistoriaController implements Initializable {
+
+    @FXML
+    private TableView<LainausModel> lainausHistoriaTable;
+
+    KirjakokoelmaModel kirjakokoelma = new KirjakokoelmaModel();
+
+    private KirjaModel tarkasteltavaKirja = new KirjaModel();
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        ObservableList<LainausModel> lainauksetLajiteltu = tarkasteltavaKirja.getObservableLainaukset();
+        IO.println(lainauksetLajiteltu);
+        lainausHistoriaTable.setItems(lainauksetLajiteltu);
+        lainausHistoriaTable.setEditable(true);
+
+        TableColumn<LainausModel, LocalDateTime> lainattuPvmSarake = new TableColumn<>("Lainattu");
+        lainattuPvmSarake.setCellValueFactory(cd -> cd.getValue().lainattuPvmProperty());
+        lainausHistoriaTable.getColumns().add(lainattuPvmSarake);
+
+        TableColumn<LainausModel, LocalDateTime> palautusSarake = new TableColumn<>("Palautus");
+        palautusSarake.setCellValueFactory(cd -> cd.getValue().palautusPvmProperty());
+        lainausHistoriaTable.getColumns().add(palautusSarake);
+
+        TableColumn<LainausModel, LocalDateTime> palautettuSarake = new TableColumn<>("Palautettu");
+        palautettuSarake.setCellValueFactory(cd -> cd.getValue().palautettuPvmProperty());
+        lainausHistoriaTable.getColumns().add(palautettuSarake);
+
+        lainausHistoriaTable.setRowFactory(lainaus -> {
+            TableRow<LainausModel> row = new TableRow<>();
+
+            return row;
+        });
+
+        kirjakokoelma.lataa();
+    }
+
+    public void setKirja(KirjaModel kirja) {
+        this.tarkasteltavaKirja = kirja;
+    }
+}
+

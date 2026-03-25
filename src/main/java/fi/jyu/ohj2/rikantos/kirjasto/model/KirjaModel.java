@@ -1,21 +1,28 @@
 package fi.jyu.ohj2.rikantos.kirjasto.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import javafx.beans.Observable;
 import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Kirja {
+public class KirjaModel {
     private final StringProperty nimi = new SimpleStringProperty("");
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty isbn = new SimpleStringProperty("");
-    //private List<Lainaus> lainaukset;
+    private List<LainausModel> lainaukset = new ArrayList<>();
+    @JsonIgnore
+    private ListProperty<LainausModel> observableLainaukset = new SimpleListProperty<>(FXCollections.observableArrayList());
     private BooleanProperty lainattu = new SimpleBooleanProperty(false);
 
     @SuppressWarnings("unused")
-    public Kirja() {
+    public KirjaModel() {
     }
 
-    public Kirja(String nimi, String tekija, String isbn) {
+    public KirjaModel(String nimi, String tekija, String isbn) {
         setNimi(nimi);
         setTekija(tekija);
         setIsbn(isbn);
@@ -70,18 +77,45 @@ public class Kirja {
         return this.lainattu;
     }
 
-    //public List<Lainaus> getLainaukset() {return lainaukset;}
-
-    public void setLainaukset(List<Lainaus> lainaukset) {
-        //this.lainaukset = lainaukset;
+    // Call this after deserialization
+    public void initObservableList() {
+        observableLainaukset.setAll(lainaukset);
     }
+
+    // JSON getters/setters
+    public List<LainausModel> getLainaukset() { return lainaukset; }
+
+    public void setLainaukset(List<LainausModel> lainaukset) {
+        this.lainaukset = lainaukset;
+        initObservableList();
+    }
+
+    public void setObservableLainaukset(ObservableList<LainausModel> observableLainaukset) {
+        this.observableLainaukset.set(observableLainaukset);
+    }
+
+    // JavaFX property getter
+    public ListProperty<LainausModel> observableLainauksetProperty() {
+        return observableLainaukset;
+    }
+
+    public ObservableList<LainausModel> getObservableLainaukset() {
+        IO.println(observableLainaukset);
+        IO.println(lainaukset);
+        return observableLainaukset.get();
+    }
+
     /**
      * Lisää merkinnän kirjan lainauksia seuraavaan listaan Lainus objektista
      * @param lainaus
      */
-    public void lisaaLainaus(Lainaus lainaus) {
+    public void lisaaLainauksiin(LainausModel lainaus) {
         if (lainaus == null) return;
-        //lainaukset.add(lainaus);
+        IO.println(lainaus);
+        IO.println(lainaukset);
+        lainaukset.add(lainaus);
+        IO.println(lainaukset);
+        initObservableList();
     }
 
     @Override

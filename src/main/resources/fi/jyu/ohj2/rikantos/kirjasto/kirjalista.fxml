@@ -19,7 +19,7 @@
             <TextField fx:id="isbnTxt" VBox.vgrow="NEVER" />
             <HBox alignment="TOP_RIGHT" spacing="10.0">
                <children>
-                  <Button fx:id="lisaaKirja" mnemonicParsing="false" onMouseClicked="#handleLisaaKirja" text="Lisää" />
+                  <Button fx:id="lisaaKirja" mnemonicParsing="false" text="Lisää" />
                   <Button fx:id="poistaKirja" mnemonicParsing="false" onMouseClicked="#handlePoistaKirja" text="Poista" />
                </children>
             </HBox>

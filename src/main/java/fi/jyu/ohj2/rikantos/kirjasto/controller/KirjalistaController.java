@@ -44,10 +44,7 @@ public class KirjalistaController implements Initializable {
     @FXML
     private TextField tekijaTxt;
 
-    @FXML
-    void handleLisaaKirja(MouseEvent event) {
-        lisaaKirja();
-    }
+
 
     @FXML
     void handlePoistaKirja(MouseEvent event) {
@@ -99,10 +96,31 @@ public class KirjalistaController implements Initializable {
                     avaaLainaHistoria(valittuKirja);
                 }
             });
+
+            // Lisätään uudelle riville tapahtumakäsittelijä klikkauksille
+            row.setOnMouseClicked(event -> {
+                // Jos oli hiiren ykkösnapin yksittäinen klikkaus,
+                // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
+                if (event.getButton().equals(MouseButton.PRIMARY) &&
+                        event.getClickCount() == 1 && !row.isEmpty()) {
+                    lisaaKirja.setText("Muokkaa");
+                    lisaaKirja.setOnAction(ev -> {
+                        muokkaaKirjaa();
+                    });
+                }
+            });
             return row;
+        });
+
+        lisaaKirja.setOnAction(ev -> {
+            lisaaKirja();
         });
         // Ladataan kirjakokoelman tiedot tiedostosta
         kirjakokoelmaModel.lataa();
+    }
+
+    private boolean validoi() {
+        return false;
     }
 
     /**
@@ -134,11 +152,49 @@ public class KirjalistaController implements Initializable {
         isbnTxt.clear();
     }
 
+    private void muokkaaKirjaa() {
+        KirjaModel valittuKirja = kirjaTaulu.getSelectionModel().getSelectedItem();
+
+        String nimi = nimiTxt.getText();
+        String tekija = tekijaTxt.getText();
+        String isbn = isbnTxt.getText();
+
+        if (nimi == null || nimi.isBlank()) {
+            nimiTxt.requestFocus();
+            return;
+        }
+        if (tekija == null || tekija.isBlank()) {
+            tekijaTxt.requestFocus();
+            return;
+        }
+        if (isbn == null || isbn.isBlank()) {
+            isbnTxt.requestFocus();
+            return;
+        }
+
+        if (valittuKirja == null) {
+            return;
+        }
+
+        // Luodaan uusi kirja
+        KirjaModel uudetTiedot = new KirjaModel(nimi, tekija, isbn);
+
+        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot);
+        lainakokoelmaModel.paivitaTietynKirjanLainaukset(valittuKirja);
+        kirjakokoelmaModel.tallenna();
+        lainakokoelmaModel.tallenna();
+    }
+
     /**
      * Poistetaan hiirellä kirjaTaulusta valittu kirja painamalla poista painiketta
      */
     private void poistaValittu() {
         KirjaModel valittuKirja = kirjaTaulu.getSelectionModel().getSelectedItem();
+
+        if (valittuKirja == null) {
+            return;
+        }
+
         // Poistetaan vain jos valitun kirjan nimi on sama kuin lainauksissa olevan nimi
         // TODO - ISBN voisi olla parempi tarkastettava
         lainaukset.removeIf(lainaus -> Objects.equals(lainaus.getKirjaNimi(), valittuKirja.getNimi()));

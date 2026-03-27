@@ -45,7 +45,7 @@ public class LainaHistoriaController implements Initializable {
     public void taytaTaulukko() {
         tarkasteltavaKirja.asetaObservableLainaukset();
         ObservableList<LainausModel> lainauksetLajiteltu = tarkasteltavaKirja.getObservableLainaukset();
-        IO.println(lainauksetLajiteltu);
+
         lainausHistoriaTable.setItems(lainauksetLajiteltu);
         lainausHistoriaTable.setEditable(true);
 

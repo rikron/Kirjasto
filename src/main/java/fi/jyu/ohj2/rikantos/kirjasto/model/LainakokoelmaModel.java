@@ -38,6 +38,24 @@ public class LainakokoelmaModel {
     }
 
     /**
+     * Hakee tietyn kirjan listasta syötetyn kirjan perusteella
+     * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
+     * @return Kirjan indeksi
+     */
+    public int paivitaTietynKirjanLainaukset(KirjaModel tavoiteltuKirja) {
+        int koko = lainaukset.size();
+
+        for(int i = 1; i<koko; i++){
+            if (tavoiteltuKirja.getNimi().equals(lainaukset.get(i).getKirjaNimi())
+                && tavoiteltuKirja.getTekija().equals(lainaukset.get(i).getTekija())){
+                lainaukset.get(i).setKirjaNimi(tavoiteltuKirja.getNimi());
+                lainaukset.get(i).setTekija(tavoiteltuKirja.getTekija());
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Tallennetaan lainaukset tiedostoon
      */
     public void tallenna() {

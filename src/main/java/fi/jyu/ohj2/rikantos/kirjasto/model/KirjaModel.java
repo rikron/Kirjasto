@@ -1,7 +1,6 @@
 package fi.jyu.ohj2.rikantos.kirjasto.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

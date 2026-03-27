@@ -4,6 +4,7 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -13,6 +14,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class KirjakokoelmaModel {
+
+    // ObservableList, joka ottaa kirjojen tiedot vastaan ja tallentaa ne JavaFX:lle sopivalla tavalla
     private final ObservableList<KirjaModel> kirjat = FXCollections.observableArrayList(
             kirja -> new Observable[]{
                     kirja.nimiProperty(),
@@ -26,14 +29,34 @@ public class KirjakokoelmaModel {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public KirjakokoelmaModel() {
+        // Kuuntelija muutoksille, joka tallentaa ne tiedostoon
         kirjat.addListener((ListChangeListener<KirjaModel>) change -> {
             tallenna();
         });
     }
 
-
     public ObservableList<KirjaModel> getKirjat() {
         return kirjat;
+    }
+
+    public ObservableList<KirjaModel> getLainaamattomatKirjat() {
+        return new FilteredList<>(this.getKirjat(), kirja -> !kirja.getLainattu());
+    }
+
+    /**
+     * Hakee tietyn kirjan listasta syötetyn kirjan perusteella
+     * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
+     * @return Kirjan indeksi
+     */
+    public int getTiettyKirja(KirjaModel tavoiteltuKirja) {
+        int koko = kirjat.size();
+
+        for(int i = 0; i<koko; i++){
+            if (tavoiteltuKirja.equals(kirjat.get(i))){
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -78,6 +101,32 @@ public class KirjakokoelmaModel {
         isbn = isbn.trim();
 
         kirjat.add(new KirjaModel(nimi, tekija, isbn));
+
+        tallenna();
+    }
+
+    /**
+     * Otaa vastaan vanha kirja, jota päivitetään, sekä uusilla tiedoin varustettu
+     * teos, joka sijoitetaan kokoelmaan vanhan sijalle. Lainahistoria ja lainattu-status säilyy.
+     * @param vanhaKirja - Kirja, jota halutaan muokata
+     * @param uusiKirja - Kirja, joka asetetaan vanhan kirjan tilalle
+     */
+    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja) {
+        if (vanhaKirja == null) return;
+
+        // Etsitään kirjan indeksi kokoelmasta, jos ei löydy, palautetaan -1 ja palataan
+        int listanKirjaIndeksi = getTiettyKirja(vanhaKirja);
+        if (listanKirjaIndeksi == -1) return;
+
+        // Asetetaan lainaukset ja lainattu tila uusiksi. Fyysiset kirjathan eivät muuttuisi
+        uusiKirja.setLainaukset(vanhaKirja.getLainaukset());
+        uusiKirja.setLainattu(vanhaKirja.getLainattu());
+
+        // Asetetaan kokoelmaan uusi kirja vanhan kirjan indeksiin.
+        // Näkyvissä taulukoissa toki järjestys menee muiden asioiden mukaisesti
+        kirjat.set(listanKirjaIndeksi, uusiKirja);
+        // Tallennetaan taulukon muutokset
+        tallenna();
     }
 
     /**
@@ -89,5 +138,6 @@ public class KirjakokoelmaModel {
             return;
         }
         kirjat.remove(kirja);
+        tallenna();
     }
 }

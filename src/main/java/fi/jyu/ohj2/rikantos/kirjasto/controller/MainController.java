@@ -48,9 +48,44 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Lajitellaan kirjat aina tekijän nimen mukaisesti
-        FilteredList<KirjaModel> kirjatSuodatettu = new FilteredList<>(kirjakokoelmaModel.getKirjat(), kirja -> !kirja.getLainattu());
-        SortedList<KirjaModel> kirjatLajiteltu = kirjatSuodatettu.sorted(Comparator.comparing(KirjaModel::getTekija));
+        taytaTaulukot();
+    }
+
+    @FXML
+    void handleLainaaKirja(MouseEvent event) {
+        lainaaKirja();
+    }
+
+    @FXML
+    void handlePalautaKirja(MouseEvent event) {
+        palautaKirja();
+    }
+
+    @FXML
+    void handleSiirryKirjalistaan(MouseEvent event) {
+        try {
+            /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("kirjalista.fxml"));
+            /* 1 */ Parent root = loader.load();
+            /* 1 */ Scene scene = new Scene(root);
+
+            /* 2 */ Stage dialogi = new Stage();
+            /* 2 */ dialogi.setScene(scene);
+
+            /* 3 */ dialogi.setTitle("Kirjalista");
+            /* 3 */ dialogi.setMinWidth(400);
+            /* 3 */ dialogi.setMinHeight(300);
+            /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
+
+            /* 4 */ dialogi.showAndWait();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void taytaTaulukot() {
+        // Lajitellaan kirjat aina tekijän nimen mukaisesti, haetaan vain lainaamattomat kirjat
+        SortedList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getLainaamattomatKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
         lainattavissaTable.setItems(kirjatLajiteltu);
         lainattavissaTable.setEditable(true);
 
@@ -78,7 +113,9 @@ public class MainController implements Initializable {
                 // Jos oli hiiren ykkösnapin tuplaklikkaus,
                 // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
                 if (event.getButton().equals(MouseButton.PRIMARY) &&
-                event.getClickCount() == 2 && !row.isEmpty()) {
+                        event.getClickCount() == 2 && !row.isEmpty()) {
+                    tyhjennaTaulukot();
+                    taytaTaulukot();
                     // Haetaan riviä vastaava kirja
                     KirjaModel valittuKirja = row.getItem();
                     // Avataan lainahistoria dialogi, jolle syötetään valittu kirja
@@ -120,36 +157,9 @@ public class MainController implements Initializable {
         kirjakokoelmaModel.lataa();
     }
 
-    @FXML
-    void handleLainaaKirja(MouseEvent event) {
-        lainaaKirja();
-    }
-
-    @FXML
-    void handlePalautaKirja(MouseEvent event) {
-        palautaKirja();
-    }
-
-    @FXML
-    void handleSiirryKirjalistaan(MouseEvent event) {
-        try {
-            /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("kirjalista.fxml"));
-            /* 1 */ Parent root = loader.load();
-            /* 1 */ Scene scene = new Scene(root);
-
-            /* 2 */ Stage dialogi = new Stage();
-            /* 2 */ dialogi.setScene(scene);
-
-            /* 3 */ dialogi.setTitle("Kirjalista");
-            /* 3 */ dialogi.setMinWidth(400);
-            /* 3 */ dialogi.setMinHeight(300);
-            /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
-
-            /* 4 */ dialogi.showAndWait();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void tyhjennaTaulukot() {
+        lainaamatTable.getColumns().clear();
+        lainattavissaTable.getColumns().clear();
     }
 
     /**
@@ -195,6 +205,8 @@ public class MainController implements Initializable {
         }
 
         valittuLainaus.getKirja().setLainattu(false);
+        valittuLainaus.setPalautettuPvm(LocalDateTime.now());
+
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
     }
 

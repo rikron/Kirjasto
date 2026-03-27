@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import static java.time.LocalDateTime.now;
 
 public class LainausModel {
+    // Ei anneta kirjaa Jacksonille hämmästeltäväksi
     @JsonIgnore
     private KirjaModel kirja = new KirjaModel();
     private final StringProperty tekija = new SimpleStringProperty("");

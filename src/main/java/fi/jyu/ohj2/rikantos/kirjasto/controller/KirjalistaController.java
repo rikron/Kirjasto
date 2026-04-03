@@ -5,6 +5,8 @@ import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
@@ -42,6 +44,9 @@ public class KirjalistaController implements Initializable {
     private Button poistaKirja;
 
     @FXML
+    private Button muokkaaKirjaa;
+
+    @FXML
     private TextField tekijaTxt;
 
 
@@ -60,8 +65,7 @@ public class KirjalistaController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // Lajitellaan kirjat tekijän nimen mukaan
         // TODO - Voisi jaotella nimet etunimi ja sukunimi ja lajitella sukunimen mukaan
-        // TODO - Ilmeisesti SortedList ei kelpaa tableview:lle??
-        SortedList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
+        ObservableList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
         kirjaTaulu.setItems(kirjatLajiteltu);
         kirjaTaulu.setEditable(true);
         
@@ -96,29 +100,22 @@ public class KirjalistaController implements Initializable {
                     avaaLainaHistoria(valittuKirja);
                 }
             });
-
-            // Lisätään uudelle riville tapahtumakäsittelijä klikkauksille
-            row.setOnMouseClicked(event -> {
-                // Jos oli hiiren ykkösnapin yksittäinen klikkaus,
-                // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
-                if (event.getButton().equals(MouseButton.PRIMARY) &&
-                        event.getClickCount() == 1 && !row.isEmpty()) {
-                    lisaaKirja.setText("Muokkaa");
-                    lisaaKirja.setOnAction(ev -> {
-                        muokkaaKirjaa();
-                    });
-                }
-            });
             return row;
         });
 
         lisaaKirja.setOnAction(ev -> {
             lisaaKirja();
         });
+
+        muokkaaKirjaa.setOnAction(ev -> {
+            muokkaaKirjaa();
+        });
+
         // Ladataan kirjakokoelman tiedot tiedostosta
         kirjakokoelmaModel.lataa();
     }
 
+    // TODO - Validoi toiminnat, samalla voisi myös päivittää listaukset.
     private boolean validoi() {
         return false;
     }
@@ -181,8 +178,6 @@ public class KirjalistaController implements Initializable {
 
         kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot);
         lainakokoelmaModel.paivitaTietynKirjanLainaukset(valittuKirja);
-        kirjakokoelmaModel.tallenna();
-        lainakokoelmaModel.tallenna();
     }
 
     /**

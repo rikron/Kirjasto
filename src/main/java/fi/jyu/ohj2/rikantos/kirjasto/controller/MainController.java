@@ -5,7 +5,7 @@ import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
-import javafx.collections.transformation.FilteredList;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -25,8 +25,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainController implements Initializable {
-    private KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel();
-    private LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel();
+    private final KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel();
+    private final LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel();
 
     @FXML
     private Button lainaaKirjaBtn;
@@ -52,16 +52,6 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    void handleLainaaKirja(MouseEvent event) {
-        lainaaKirja();
-    }
-
-    @FXML
-    void handlePalautaKirja(MouseEvent event) {
-        palautaKirja();
-    }
-
-    @FXML
     void handleSiirryKirjalistaan(MouseEvent event) {
         try {
             /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("kirjalista.fxml"));
@@ -78,6 +68,9 @@ public class MainController implements Initializable {
 
             /* 4 */ dialogi.showAndWait();
 
+            // Päivitetään MainControllerin tiedot, kun dialogi sammuu
+            //tyhjennaJaTaytaTaulukot();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -85,7 +78,7 @@ public class MainController implements Initializable {
 
     private void taytaTaulukot() {
         // Lajitellaan kirjat aina tekijän nimen mukaisesti, haetaan vain lainaamattomat kirjat
-        SortedList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getLainaamattomatKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
+        ObservableList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getLainaamattomatKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
         lainattavissaTable.setItems(kirjatLajiteltu);
         lainattavissaTable.setEditable(true);
 
@@ -114,8 +107,6 @@ public class MainController implements Initializable {
                 // eikä tyhjän rivialueen klikkaus, niin käsitellään tapahtuma
                 if (event.getButton().equals(MouseButton.PRIMARY) &&
                         event.getClickCount() == 2 && !row.isEmpty()) {
-                    tyhjennaTaulukot();
-                    taytaTaulukot();
                     // Haetaan riviä vastaava kirja
                     KirjaModel valittuKirja = row.getItem();
                     // Avataan lainahistoria dialogi, jolle syötetään valittu kirja
@@ -127,7 +118,7 @@ public class MainController implements Initializable {
         });
 
         // Lajitellaan tässä palautusPvm mukaan
-        SortedList<LainausModel> lainauksetLajiteltu = lainakokoelmaModel.getLainaukset().sorted(Comparator.comparing(LainausModel::getPalautusPvm));
+        ObservableList<LainausModel> lainauksetLajiteltu = lainakokoelmaModel.getLainaukset().sorted(Comparator.comparing(LainausModel::getPalautusPvm));
         lainaamatTable.setItems(lainauksetLajiteltu);
         lainaamatTable.setEditable(true);
 
@@ -153,6 +144,14 @@ public class MainController implements Initializable {
             return row;
         });
 
+        lainaaKirjaBtn.setOnAction(ev -> {
+            lainaaKirja();
+        });
+
+        palautaKirjaBtn.setOnAction(ev -> {
+            palautaKirja();
+        });
+
         lainakokoelmaModel.lataa();
         kirjakokoelmaModel.lataa();
     }
@@ -162,12 +161,20 @@ public class MainController implements Initializable {
         lainattavissaTable.getColumns().clear();
     }
 
-    /**
-     * Poistaa valitun lainauksen lainakokoelmasta
-     */
-    private void poistaValittu() {
-        LainausModel valittuLainaus = lainaamatTable.getSelectionModel().getSelectedItem();
-        lainakokoelmaModel.poistaLainaus(valittuLainaus);
+    private void tallenna() {
+        lainakokoelmaModel.tallenna();
+        kirjakokoelmaModel.tallenna();
+    }
+
+    private void lataa() {
+        lainakokoelmaModel.lataa();
+        kirjakokoelmaModel.lataa();
+    }
+
+    private void tyhjennaJaTaytaTaulukot() {
+        tallenna();
+        tyhjennaTaulukot();
+        lataa();
     }
 
     /**
@@ -204,10 +211,14 @@ public class MainController implements Initializable {
             return;
         }
 
+        KirjaModel vanhaKirja = valittuLainaus.getKirja();
+        IO.println(valittuLainaus.getKirja().getLainattu());
         valittuLainaus.getKirja().setLainattu(false);
+        IO.println(valittuLainaus.getKirja().getLainattu());
         valittuLainaus.setPalautettuPvm(LocalDateTime.now());
 
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
+        kirjakokoelmaModel.paivitaKirja(vanhaKirja, valittuLainaus.getKirja());
     }
 
     /**
@@ -226,13 +237,14 @@ public class MainController implements Initializable {
             /* 2 */ Stage dialogi = new Stage();
             /* 2 */ dialogi.setScene(scene);
 
-            /* 3 */ dialogi.setTitle("Kirjalista");
-            /* 3 */ dialogi.setMinWidth(400);
-            /* 3 */ dialogi.setMinHeight(300);
+            /* 3 */ dialogi.setTitle("Lainahistoria");
+            /* 3 */ dialogi.setMinWidth(600);
+            /* 3 */ dialogi.setMinHeight(500);
             /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
 
             /* 4 */ dialogi.showAndWait();
 
+            //tyhjennaJaTaytaTaulukot();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

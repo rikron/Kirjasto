@@ -21,8 +21,8 @@
       <children>
          <TextField fx:id="lainaajanNimiTxt" maxWidth="200.0" promptText="Syötä nimesi..." />
          <Button fx:id="siirryKirjaListaanBtn" mnemonicParsing="false" onMouseClicked="#handleSiirryKirjalistaan" text="Siirry kirjalistaan" />
-          <Button fx:id="lainaaKirjaBtn" onMouseClicked="#handleLainaaKirja" text="Lainaa" />
-         <Button fx:id="palautaKirjaBtn" mnemonicParsing="false" onMouseClicked="#handlePalautaKirja" text="Palauta" />
+          <Button fx:id="lainaaKirjaBtn" text="Lainaa" />
+         <Button fx:id="palautaKirjaBtn" mnemonicParsing="false" text="Palauta" />
       </children>
    </HBox>
 </VBox>

@@ -74,9 +74,14 @@ public class KirjakokoelmaModel {
             return;
         }
         try {
+            // Luetaan tiedostosta kirjat
             List<KirjaModel> kaikkiKirjat = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
-            kirjat.clear();
+            // Tyhjennetään taulukko
+            //kirjat.clear();
+            // Lisätään kirjat taulukkoon
             kirjat.addAll(kaikkiKirjat);
+            // Lisätään vielä observableLainaukset listaan kaikki kirjat,
+            // sillä ne eivät automaattisesti sinne lisäänny
             for (KirjaModel kirja : kirjat) {
                 kirja.asetaObservableLainaukset();
             }
@@ -101,8 +106,6 @@ public class KirjakokoelmaModel {
         isbn = isbn.trim();
 
         kirjat.add(new KirjaModel(nimi, tekija, isbn));
-
-        tallenna();
     }
 
     /**
@@ -118,7 +121,7 @@ public class KirjakokoelmaModel {
         int listanKirjaIndeksi = getTiettyKirja(vanhaKirja);
         if (listanKirjaIndeksi == -1) return;
 
-        // Asetetaan lainaukset ja lainattu tila uusiksi. Fyysiset kirjathan eivät muuttuisi
+        // Asetetaan lainaukset ja lainattu tila uusiksi. Fyysisten kirjojen lainaustila ei muuttuisi
         uusiKirja.setLainaukset(vanhaKirja.getLainaukset());
         uusiKirja.setLainattu(vanhaKirja.getLainattu());
 

@@ -1,10 +1,7 @@
 package fi.jyu.ohj2.rikantos.kirjasto.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +13,7 @@ public class LainausModel {
     private KirjaModel kirja = new KirjaModel();
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty kirjaNimi = new SimpleStringProperty("");
+    private BooleanProperty lainattu = new SimpleBooleanProperty(false);
     private final StringProperty lainaajaNimi = new SimpleStringProperty("");
     private ObjectProperty<LocalDateTime> lainattuPvm = new SimpleObjectProperty<>();;
     private ObjectProperty<LocalDateTime> palautusPvm = new SimpleObjectProperty<>();;
@@ -30,6 +28,7 @@ public class LainausModel {
         setKirja(kirja);
         setKirjaNimi(kirja.getNimi());
         setTekija(kirja.getNimi());
+        setLainattu(kirja.getLainattu());
         setLainaajaNimi(lainaajaNimi);
         setLainattuPvm(now());
         int lainaViikot = 4;
@@ -47,6 +46,10 @@ public class LainausModel {
     public String getTekija() {return tekija.get();}
     public void setTekija(String tekija) {this.tekija.set(tekija);}
     public StringProperty tekijaProperty() {return tekija;}
+
+    public boolean getLainattu() {return lainattu.get();}
+    public void setLainattu(boolean lainattu) {this.lainattu.set(lainattu);}
+    public BooleanProperty lainattuProperty() {return lainattu;}
 
     public String getLainaajaNimi() {return lainaajaNimi.get();}
     public void setLainaajaNimi(String lainaajaNimi) {this.lainaajaNimi.set(lainaajaNimi);}
@@ -70,6 +73,7 @@ public class LainausModel {
     public void poistaLainaus() {
         setTekija(null);
         setKirjaNimi(null);
+        setLainattu(false);
         setLainaajaNimi(null);
         setLainattuPvm(null);
         setPalautusPvm(null);

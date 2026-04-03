@@ -18,6 +18,7 @@ public class LainakokoelmaModel {
             lainaus -> new Observable[]{
                     lainaus.tekijaProperty(),
                     lainaus.kirjaNimiProperty(),
+                    lainaus.getKirja().lainattuProperty(),
                     lainaus.lainaajaNimiProperty(),
                     lainaus.lainattuPvmProperty(),
                     lainaus.palautusPvmProperty(),
@@ -42,17 +43,16 @@ public class LainakokoelmaModel {
      * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
      * @return Kirjan indeksi
      */
-    public int paivitaTietynKirjanLainaukset(KirjaModel tavoiteltuKirja) {
+    public void paivitaTietynKirjanLainaukset(KirjaModel tavoiteltuKirja) {
         int koko = lainaukset.size();
 
-        for(int i = 1; i<koko; i++){
-            if (tavoiteltuKirja.getNimi().equals(lainaukset.get(i).getKirjaNimi())
-                && tavoiteltuKirja.getTekija().equals(lainaukset.get(i).getTekija())){
-                lainaukset.get(i).setKirjaNimi(tavoiteltuKirja.getNimi());
-                lainaukset.get(i).setTekija(tavoiteltuKirja.getTekija());
+        for (LainausModel lainausModel : lainaukset) {
+            if (tavoiteltuKirja.getNimi().equals(lainausModel.getKirjaNimi())
+                    && tavoiteltuKirja.getTekija().equals(lainausModel.getTekija())) {
+                lainausModel.setKirjaNimi(tavoiteltuKirja.getNimi());
+                lainausModel.setTekija(tavoiteltuKirja.getTekija());
             }
         }
-        return -1;
     }
 
     /**
@@ -70,7 +70,11 @@ public class LainakokoelmaModel {
             return;
         }
         try {
+            // Haetaan tiedostosta lainaukset
             List<LainausModel> kaikkiLainaukset = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            // Tyhjennetään vanha taulukko
+            lainaukset.clear();
+            // Kirjoitetaan tiedostosta lainaukset listaan
             lainaukset.addAll(kaikkiLainaukset);
         } catch (JacksonException je) {
             IO.println("Lainakokoelma - JSONin lukeminen epäonnistui: " + je.getMessage());

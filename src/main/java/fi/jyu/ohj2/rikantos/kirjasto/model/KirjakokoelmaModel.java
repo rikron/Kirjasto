@@ -1,19 +1,17 @@
 package fi.jyu.ohj2.rikantos.kirjasto.model;
 
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.KirjaRepository;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.RepositoryException;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 public class KirjakokoelmaModel {
+    private final KirjaRepository repository;
 
     // ObservableList, joka ottaa kirjojen tiedot vastaan ja tallentaa ne JavaFX:lle sopivalla tavalla
     private final ObservableList<KirjaModel> kirjat = FXCollections.observableArrayList(
@@ -25,14 +23,10 @@ public class KirjakokoelmaModel {
                     kirja.lainattuProperty()}
     );
 
-    private final Path tiedostoPolku = Path.of("kirjat.json");
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    public KirjakokoelmaModel() {
+    public KirjakokoelmaModel(KirjaRepository repository) {
+        this.repository = repository;
         // Kuuntelija muutoksille, joka tallentaa ne tiedostoon
-        kirjat.addListener((ListChangeListener<KirjaModel>) change -> {
-            tallenna();
-        });
+        kirjat.addListener((ListChangeListener<KirjaModel>) _ -> tallenna());
     }
 
     public ObservableList<KirjaModel> getKirjat() {
@@ -48,12 +42,17 @@ public class KirjakokoelmaModel {
      * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
      * @return Kirjan indeksi
      */
-    public int getTiettyKirja(KirjaModel tavoiteltuKirja) {
-        int koko = kirjat.size();
+    public int getTiettyKirja(KirjaModel tavoiteltuKirja, String nimi, String tekija) {
+        tallenna();
+        lataa();
 
-        for(int i = 0; i<koko; i++){
-            if (tavoiteltuKirja.equals(kirjat.get(i))){
-                return i;
+        for(KirjaModel kirja : kirjat){
+            //IO.println("Tavoitellaan: " + tavoiteltuKirja);
+            //IO.println("Käsitellään: " + kirja);
+            if ((tavoiteltuKirja.getNimi().equals(kirja.getNimi()) && tavoiteltuKirja.getTekija().equals(kirja.getTekija()))
+                || (nimi.equals(kirja.getNimi()) && tekija.equals(kirja.getTekija()))){
+                //IO.println("Indeksi on: " +kirjat.indexOf(kirja));
+                return kirjat.indexOf(kirja);
             }
         }
         return -1;
@@ -63,21 +62,22 @@ public class KirjakokoelmaModel {
      * Tallentaa kirjakokoelmaan lisätyt kirjat tiedostoon
      */
     public void tallenna() {
-        mapper.writeValue(tiedostoPolku, kirjat);
+        try {
+            repository.tallenna(kirjat);
+        } catch (RepositoryException e) {
+            IO.println(e.getMessage());
+        }
     }
 
     /**
      * Lataa kirjakokoelman tiedot tiedostosta, jos se on olemassa
      */
     public void lataa() {
-        if (Files.notExists(tiedostoPolku)) {
-            return;
-        }
         try {
             // Luetaan tiedostosta kirjat
-            List<KirjaModel> kaikkiKirjat = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            List<KirjaModel> kaikkiKirjat = repository.lataa();
             // Tyhjennetään taulukko
-            //kirjat.clear();
+            kirjat.clear();
             // Lisätään kirjat taulukkoon
             kirjat.addAll(kaikkiKirjat);
             // Lisätään vielä observableLainaukset listaan kaikki kirjat,
@@ -85,8 +85,8 @@ public class KirjakokoelmaModel {
             for (KirjaModel kirja : kirjat) {
                 kirja.asetaObservableLainaukset();
             }
-        } catch (JacksonException je) {
-            IO.println("Kirjakokoelma - JSONin lukeminen epäonnistui: " + je.getMessage());
+        } catch (RepositoryException e) {
+            IO.println(e.getMessage());
         }
     }
 
@@ -114,12 +114,15 @@ public class KirjakokoelmaModel {
      * @param vanhaKirja - Kirja, jota halutaan muokata
      * @param uusiKirja - Kirja, joka asetetaan vanhan kirjan tilalle
      */
-    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja) {
+    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja, String nimi, String tekija) {
         if (vanhaKirja == null) return;
-
         // Etsitään kirjan indeksi kokoelmasta, jos ei löydy, palautetaan -1 ja palataan
-        int listanKirjaIndeksi = getTiettyKirja(vanhaKirja);
-        if (listanKirjaIndeksi == -1) return;
+        int listanKirjaIndeksi = getTiettyKirja(vanhaKirja, nimi, tekija);
+        //IO.println("Päivitetään: " + listanKirjaIndeksi);
+        if (listanKirjaIndeksi == -1) {
+            //IO.println("Listasta ei löydetty kirjaa!");
+            return;
+        }
 
         // Asetetaan lainaukset ja lainattu tila uusiksi. Fyysisten kirjojen lainaustila ei muuttuisi
         uusiKirja.setLainaukset(vanhaKirja.getLainaukset());
@@ -128,8 +131,6 @@ public class KirjakokoelmaModel {
         // Asetetaan kokoelmaan uusi kirja vanhan kirjan indeksiin.
         // Näkyvissä taulukoissa toki järjestys menee muiden asioiden mukaisesti
         kirjat.set(listanKirjaIndeksi, uusiKirja);
-        // Tallennetaan taulukon muutokset
-        tallenna();
     }
 
     /**
@@ -141,6 +142,5 @@ public class KirjakokoelmaModel {
             return;
         }
         kirjat.remove(kirja);
-        tallenna();
     }
 }

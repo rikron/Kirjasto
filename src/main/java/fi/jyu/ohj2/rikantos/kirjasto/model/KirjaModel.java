@@ -48,9 +48,9 @@ public class KirjaModel {
     public void setLainattu(boolean lainattu) {this.lainattu.set(lainattu);}
     public BooleanProperty lainattuProperty() {return this.lainattu;}
 
-    public void setObservableLainaukset(ObservableList<LainausModel> observableLainaukset) {this.observableLainaukset.set(observableLainaukset);}
     public ObservableList<LainausModel> getObservableLainaukset() {return observableLainaukset.get();}
-    public ListProperty<LainausModel> observableLainauksetProperty() {return observableLainaukset;}
+    public void setObservableLainaukset(ObservableList<LainausModel> observableLainaukset) {this.observableLainaukset.set(observableLainaukset);}
+    public ListProperty<LainausModel> observableLainauksetProperty() {return this.observableLainaukset;}
 
     public List<LainausModel> getLainaukset() { return lainaukset; }
 

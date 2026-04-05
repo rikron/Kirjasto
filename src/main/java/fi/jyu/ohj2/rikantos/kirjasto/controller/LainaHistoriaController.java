@@ -3,6 +3,7 @@ package fi.jyu.ohj2.rikantos.kirjasto.controller;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonKirjaRepository;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -11,6 +12,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 
@@ -19,7 +21,7 @@ public class LainaHistoriaController implements Initializable {
     @FXML
     private TableView<LainausModel> lainausHistoriaTable;
 
-    KirjakokoelmaModel kirjakokoelma = new KirjakokoelmaModel();
+    KirjakokoelmaModel kirjakokoelma = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
 
     private KirjaModel tarkasteltavaKirja;
 
@@ -61,7 +63,7 @@ public class LainaHistoriaController implements Initializable {
         palautettuSarake.setCellValueFactory(cd -> cd.getValue().palautettuPvmProperty());
         lainausHistoriaTable.getColumns().add(palautettuSarake);
 
-        lainausHistoriaTable.setRowFactory(lainaus -> {
+        lainausHistoriaTable.setRowFactory(_ -> {
             TableRow<LainausModel> row = new TableRow<>();
 
             return row;

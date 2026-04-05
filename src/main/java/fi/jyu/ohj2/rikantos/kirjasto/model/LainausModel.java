@@ -11,13 +11,15 @@ public class LainausModel {
     // Ei anneta kirjaa Jacksonille hämmästeltäväksi
     @JsonIgnore
     private KirjaModel kirja = new KirjaModel();
+
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty kirjaNimi = new SimpleStringProperty("");
     private BooleanProperty lainattu = new SimpleBooleanProperty(false);
     private final StringProperty lainaajaNimi = new SimpleStringProperty("");
-    private ObjectProperty<LocalDateTime> lainattuPvm = new SimpleObjectProperty<>();;
-    private ObjectProperty<LocalDateTime> palautusPvm = new SimpleObjectProperty<>();;
-    private ObjectProperty<LocalDateTime> palautettuPvm = new SimpleObjectProperty<>();;
+    private StringProperty isbn = new SimpleStringProperty("");
+    private ObjectProperty<LocalDateTime> lainattuPvm = new SimpleObjectProperty<>();
+    private ObjectProperty<LocalDateTime> palautusPvm = new SimpleObjectProperty<>();
+    private ObjectProperty<LocalDateTime> palautettuPvm = new SimpleObjectProperty<>();
 
     // Jacksonille tyhjä kontstruktori
     @SuppressWarnings("unused")
@@ -27,7 +29,8 @@ public class LainausModel {
     public LainausModel(KirjaModel kirja, String lainaajaNimi) {
         setKirja(kirja);
         setKirjaNimi(kirja.getNimi());
-        setTekija(kirja.getNimi());
+        setTekija(kirja.getTekija());
+        setIsbn(kirja.getIsbn());
         setLainattu(kirja.getLainattu());
         setLainaajaNimi(lainaajaNimi);
         setLainattuPvm(now());
@@ -67,16 +70,7 @@ public class LainausModel {
     public void setPalautusPvm(LocalDateTime palautusPvm) {this.palautusPvm.set(palautusPvm);}
     public ObjectProperty<LocalDateTime> palautusPvmProperty() {return palautusPvm;}
 
-    /**
-     * Poistetaan tiedot asettamalle niille null arvo
-     */
-    public void poistaLainaus() {
-        setTekija(null);
-        setKirjaNimi(null);
-        setLainattu(false);
-        setLainaajaNimi(null);
-        setLainattuPvm(null);
-        setPalautusPvm(null);
-        setPalautettuPvm(null);
-    }
+    public String getIsbn() {return isbn.get();}
+    public void setIsbn(String isbn) {this.isbn.set(isbn);}
+    public StringProperty isbnProperty() {return isbn;}
 }

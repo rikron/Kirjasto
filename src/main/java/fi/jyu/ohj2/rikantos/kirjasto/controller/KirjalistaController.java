@@ -5,6 +5,8 @@ import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonKirjaRepository;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonLainausRepository;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +24,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -56,8 +59,8 @@ public class KirjalistaController implements Initializable {
         poistaValittu();
     }
 
-    private KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel();
-    private LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel();
+    private KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
+    private LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel(new JsonLainausRepository(Path.of("lainaukset.json")));
 
     private ObservableList<LainausModel> lainaukset = lainakokoelmaModel.getLainaukset();
 
@@ -115,11 +118,6 @@ public class KirjalistaController implements Initializable {
         kirjakokoelmaModel.lataa();
     }
 
-    // TODO - Validoi toiminnat, samalla voisi myös päivittää listaukset.
-    private boolean validoi() {
-        return false;
-    }
-
     /**
      * Lisätään kirja kirjakokoelmaan. Syötteet tarkastetaan tässä vaiheessa.
      * Syötekentät tyhjennetään
@@ -170,14 +168,15 @@ public class KirjalistaController implements Initializable {
         }
 
         if (valittuKirja == null) {
+            //IO.println("Valittu kirja on NULL");
             return;
         }
 
         // Luodaan uusi kirja
         KirjaModel uudetTiedot = new KirjaModel(nimi, tekija, isbn);
 
-        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot);
-        lainakokoelmaModel.paivitaTietynKirjanLainaukset(valittuKirja);
+        lainakokoelmaModel.paivitaTietynKirjanLainaukset(valittuKirja, uudetTiedot);
+        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot, valittuKirja.getNimi(), valittuKirja.getTekija());
     }
 
     /**

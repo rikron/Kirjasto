@@ -5,6 +5,8 @@ import fi.jyu.ohj2.rikantos.kirjasto.model.KirjaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.KirjakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonKirjaRepository;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonLainausRepository;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +14,7 @@ import javafx.fxml.Initializable;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.ResourceBundle;
@@ -25,8 +28,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainController implements Initializable {
-    private final KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel();
-    private final LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel();
+    private final KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
+    private final LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel(new JsonLainausRepository(Path.of("lainaukset.json")));
 
     @FXML
     private Button lainaaKirjaBtn;
@@ -69,16 +72,18 @@ public class MainController implements Initializable {
             /* 4 */ dialogi.showAndWait();
 
             // Päivitetään MainControllerin tiedot, kun dialogi sammuu
-            //tyhjennaJaTaytaTaulukot();
-
+            kirjakokoelmaModel.lataa();
+            lainakokoelmaModel.lataa();
+            lainattavissaTable.refresh();
+            lainaamatTable.refresh();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void taytaTaulukot() {
-        // Lajitellaan kirjat aina tekijän nimen mukaisesti, haetaan vain lainaamattomat kirjat
-        ObservableList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getLainaamattomatKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
+        // Lajitellaan kirjat aina tekijän nimen mukaisesti
+        ObservableList<KirjaModel> kirjatLajiteltu = kirjakokoelmaModel.getKirjat().sorted(Comparator.comparing(KirjaModel::getTekija));
         lainattavissaTable.setItems(kirjatLajiteltu);
         lainattavissaTable.setEditable(true);
 
@@ -130,6 +135,10 @@ public class MainController implements Initializable {
         lainattuTekijaSarake.setCellValueFactory(cd -> cd.getValue().tekijaProperty());
         lainaamatTable.getColumns().add(lainattuTekijaSarake);
 
+        TableColumn<LainausModel, String> lainattuIsbnSarake = new TableColumn<>("ISBN");
+        lainattuIsbnSarake.setCellValueFactory(cd -> cd.getValue().isbnProperty());
+        lainaamatTable.getColumns().add(lainattuIsbnSarake);
+
         TableColumn<LainausModel, LocalDateTime> lainattuPvmSarake = new TableColumn<>("Lainattu");
         lainattuPvmSarake.setCellValueFactory(cd -> cd.getValue().lainattuPvmProperty());
         lainaamatTable.getColumns().add(lainattuPvmSarake);
@@ -156,27 +165,6 @@ public class MainController implements Initializable {
         kirjakokoelmaModel.lataa();
     }
 
-    private void tyhjennaTaulukot() {
-        lainaamatTable.getColumns().clear();
-        lainattavissaTable.getColumns().clear();
-    }
-
-    private void tallenna() {
-        lainakokoelmaModel.tallenna();
-        kirjakokoelmaModel.tallenna();
-    }
-
-    private void lataa() {
-        lainakokoelmaModel.lataa();
-        kirjakokoelmaModel.lataa();
-    }
-
-    private void tyhjennaJaTaytaTaulukot() {
-        tallenna();
-        tyhjennaTaulukot();
-        lataa();
-    }
-
     /**
      * Siirretään lainattu kirja ylemmästä taulusta alempaan.
      * Astetaan kirja KirjaModelissa lainautksi.
@@ -186,6 +174,10 @@ public class MainController implements Initializable {
         KirjaModel valittuKirja = lainattavissaTable.getSelectionModel().getSelectedItem();
 
         if (valittuKirja == null) {
+            return;
+        }
+
+        if (valittuKirja.getLainattu()) {
             return;
         }
 
@@ -206,19 +198,22 @@ public class MainController implements Initializable {
      */
     private void palautaKirja() {
         LainausModel valittuLainaus = lainaamatTable.getSelectionModel().getSelectedItem();
-
-        if (valittuLainaus == null) {
+        if (valittuLainaus == null || valittuLainaus.getKirjaNimi().isBlank()) {
             return;
         }
-
+        // Tallennetaan välimuistiin vanha kirja ja päivitetään todellista kirjaa
         KirjaModel vanhaKirja = valittuLainaus.getKirja();
-        IO.println(valittuLainaus.getKirja().getLainattu());
+        //IO.println("Lainattu? " + valittuLainaus.getKirja().getLainattu());
         valittuLainaus.getKirja().setLainattu(false);
-        IO.println(valittuLainaus.getKirja().getLainattu());
+        //IO.println("Lainattu? " + valittuLainaus.getKirja().getLainattu());
         valittuLainaus.setPalautettuPvm(LocalDateTime.now());
 
+        KirjaModel uusiKirja = new KirjaModel(valittuLainaus.getKirjaNimi(), valittuLainaus.getKirjaNimi(), valittuLainaus.getIsbn());
+
+        //IO.println("Kirja palautakirja funktiossa: " + vanhaKirja);
+
+        kirjakokoelmaModel.paivitaKirja(vanhaKirja, uusiKirja, valittuLainaus.getKirjaNimi(), valittuLainaus.getTekija());
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
-        kirjakokoelmaModel.paivitaKirja(vanhaKirja, valittuLainaus.getKirja());
     }
 
     /**
@@ -243,8 +238,6 @@ public class MainController implements Initializable {
             /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
 
             /* 4 */ dialogi.showAndWait();
-
-            //tyhjennaJaTaytaTaulukot();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

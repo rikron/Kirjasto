@@ -1,18 +1,15 @@
 package fi.jyu.ohj2.rikantos.kirjasto.model;
 
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.LainausRepository;
+import fi.jyu.ohj2.rikantos.kirjasto.persistence.RepositoryException;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 public class LainakokoelmaModel {
+    private final LainausRepository repository;
 
     private final ObservableList<LainausModel> lainaukset = FXCollections.observableArrayList(
             lainaus -> new Observable[]{
@@ -25,13 +22,10 @@ public class LainakokoelmaModel {
                     lainaus.palautettuPvmProperty()}
     );
 
-    private final Path tiedostoPolku = Path.of("lainaukset.json");
-    private final ObjectMapper mapper = new ObjectMapper();
+    public LainakokoelmaModel(LainausRepository repository) {
+        this.repository = repository;
 
-    public LainakokoelmaModel() {
-        lainaukset.addListener((ListChangeListener<LainausModel>) change -> {
-            tallenna();
-        });
+        lainaukset.addListener((ListChangeListener<LainausModel>) _ -> tallenna());
     }
 
     public ObservableList<LainausModel> getLainaukset() {
@@ -41,43 +35,47 @@ public class LainakokoelmaModel {
     /**
      * Hakee tietyn kirjan listasta syötetyn kirjan perusteella
      * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
-     * @return Kirjan indeksi
      */
-    public void paivitaTietynKirjanLainaukset(KirjaModel tavoiteltuKirja) {
-        int koko = lainaukset.size();
-
+    public void paivitaTietynKirjanLainaukset(KirjaModel tavoiteltuKirja, KirjaModel uudetTiedot) {
+        lataa();
         for (LainausModel lainausModel : lainaukset) {
+            //IO.println("Lainaus " + lainaukset.indexOf(lainausModel));
             if (tavoiteltuKirja.getNimi().equals(lainausModel.getKirjaNimi())
-                    && tavoiteltuKirja.getTekija().equals(lainausModel.getTekija())) {
-                lainausModel.setKirjaNimi(tavoiteltuKirja.getNimi());
-                lainausModel.setTekija(tavoiteltuKirja.getTekija());
+                    && tavoiteltuKirja.getTekija().equals(lainausModel.getTekija())
+                    && tavoiteltuKirja.getIsbn().equals(lainausModel.getIsbn())) {
+                //IO.println("Kirja löytyi!");
+                lainausModel.setKirjaNimi(uudetTiedot.getNimi());
+                lainausModel.setTekija(uudetTiedot.getTekija());
+                lainausModel.setIsbn(uudetTiedot.getIsbn());
             }
         }
+        tallenna();
     }
 
     /**
      * Tallennetaan lainaukset tiedostoon
      */
     public void tallenna() {
-        mapper.writeValue(tiedostoPolku, lainaukset);
+        try {
+            repository.tallenna(lainaukset);
+        } catch (RepositoryException e) {
+            IO.println(e.getMessage());
+        }
     }
 
     /**
      * Ladataan lainaukset tiedostosta, jos se on olemassa
      */
     public void lataa() {
-        if (Files.notExists(tiedostoPolku)) {
-            return;
-        }
         try {
             // Haetaan tiedostosta lainaukset
-            List<LainausModel> kaikkiLainaukset = mapper.readValue(tiedostoPolku, new TypeReference<>() {});
+            List<LainausModel> kaikkiLainaukset = repository.lataa();
             // Tyhjennetään vanha taulukko
             lainaukset.clear();
             // Kirjoitetaan tiedostosta lainaukset listaan
             lainaukset.addAll(kaikkiLainaukset);
-        } catch (JacksonException je) {
-            IO.println("Lainakokoelma - JSONin lukeminen epäonnistui: " + je.getMessage());
+        } catch (RepositoryException e) {
+            IO.println(e.getMessage());
         }
     }
 
@@ -90,6 +88,8 @@ public class LainakokoelmaModel {
         if (lainaajaNimi == null || lainaajaNimi.isBlank() || kirja == null) {
             return;
         }
+
+        //IO.println("lisaaLainaus kirja" + kirja);
 
         lainaajaNimi = lainaajaNimi.trim();
 

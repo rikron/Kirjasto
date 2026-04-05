@@ -15,8 +15,7 @@ public class App extends Application {
         Scene scene = new Scene(loader.load());
 
         stage.setScene(scene);
-        stage.setTitle("Kirjat");
+        stage.setTitle("Kirjasto");
         stage.show();
     }
-
 }

@@ -8,6 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class KirjakokoelmaModel {
@@ -47,8 +48,6 @@ public class KirjakokoelmaModel {
         lataa();
 
         for(KirjaModel kirja : kirjat){
-            //IO.println("Tavoitellaan: " + tavoiteltuKirja);
-            //IO.println("Käsitellään: " + kirja);
             if ((tavoiteltuKirja.getNimi().equals(kirja.getNimi()) && tavoiteltuKirja.getTekija().equals(kirja.getTekija()))
                 || (nimi.equals(kirja.getNimi()) && tekija.equals(kirja.getTekija()))){
                 //IO.println("Indeksi on: " +kirjat.indexOf(kirja));
@@ -114,7 +113,7 @@ public class KirjakokoelmaModel {
      * @param vanhaKirja - Kirja, jota halutaan muokata
      * @param uusiKirja - Kirja, joka asetetaan vanhan kirjan tilalle
      */
-    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja, String nimi, String tekija) {
+    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja, String nimi, String tekija, boolean palautettu) {
         if (vanhaKirja == null) return;
         // Etsitään kirjan indeksi kokoelmasta, jos ei löydy, palautetaan -1 ja palataan
         int listanKirjaIndeksi = getTiettyKirja(vanhaKirja, nimi, tekija);
@@ -125,8 +124,13 @@ public class KirjakokoelmaModel {
         }
 
         // Asetetaan lainaukset ja lainattu tila uusiksi. Fyysisten kirjojen lainaustila ei muuttuisi
-        uusiKirja.setLainaukset(vanhaKirja.getLainaukset());
-        uusiKirja.setLainattu(vanhaKirja.getLainattu());
+        uusiKirja.setLainaukset(kirjat.get(listanKirjaIndeksi).getLainaukset());
+        uusiKirja.setLainattu(uusiKirja.getLainattu());
+
+        // Jos kirja palautetaan, asetetaan tässä vaiheessa palautettu pvm
+        if (palautettu) {
+            uusiKirja.getLainaukset().getLast().setPalautettuPvm(LocalDateTime.now());
+        }
 
         // Asetetaan kokoelmaan uusi kirja vanhan kirjan indeksiin.
         // Näkyvissä taulukoissa toki järjestys menee muiden asioiden mukaisesti

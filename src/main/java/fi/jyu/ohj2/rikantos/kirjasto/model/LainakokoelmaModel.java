@@ -34,7 +34,7 @@ public class LainakokoelmaModel {
 
     /**
      * Hakee tietyn kirjan listasta syötetyn kirjan perusteella
-     * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
+     * @param tavoiteltuKirja Kirja jonka sijainti halutaan löytää listasta
      */
     public void paivitaTietynKirjanLainaukset(KirjaModel tavoiteltuKirja, KirjaModel uudetTiedot) {
         lataa();
@@ -81,8 +81,8 @@ public class LainakokoelmaModel {
 
     /**
      * Lisää lainauksen lainakokoelmaan. Tarkastaa myös syötteiden eheyden
-     * @param kirja - KirjaModel tyypin kirja
-     * @param lainaajaNimi - Syötetty nimi
+     * @param kirja KirjaModel tyypin kirja
+     * @param lainaajaNimi Syötetty nimi
      */
     public void lisaaLainaus(KirjaModel kirja, String lainaajaNimi) {
         if (lainaajaNimi == null || lainaajaNimi.isBlank() || kirja == null) {
@@ -101,7 +101,7 @@ public class LainakokoelmaModel {
 
     /**
      * Poistaa lainauksen kokoelmasta
-     * @param lainaus - LainausModel tyypin lainaus
+     * @param lainaus LainausModel tyypin lainaus
      */
     public void poistaLainaus(LainausModel lainaus) {
         if (lainaus == null) {

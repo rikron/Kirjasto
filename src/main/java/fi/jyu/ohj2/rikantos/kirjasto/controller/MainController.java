@@ -208,11 +208,13 @@ public class MainController implements Initializable {
         //IO.println("Lainattu? " + valittuLainaus.getKirja().getLainattu());
         valittuLainaus.setPalautettuPvm(LocalDateTime.now());
 
-        KirjaModel uusiKirja = new KirjaModel(valittuLainaus.getKirjaNimi(), valittuLainaus.getKirjaNimi(), valittuLainaus.getIsbn());
+        KirjaModel uusiKirja = new KirjaModel(valittuLainaus.getKirjaNimi(), valittuLainaus.getTekija(), valittuLainaus.getIsbn());
 
         //IO.println("Kirja palautakirja funktiossa: " + vanhaKirja);
 
-        kirjakokoelmaModel.paivitaKirja(vanhaKirja, uusiKirja, valittuLainaus.getKirjaNimi(), valittuLainaus.getTekija());
+        // Päivitetään kirjankokoelmaan status
+        kirjakokoelmaModel.paivitaKirja(vanhaKirja, uusiKirja, valittuLainaus.getKirjaNimi(), valittuLainaus.getTekija(), true);
+        // Poistetaan lainaus käyttäjän omasta lainakokoelmasta
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
     }
 

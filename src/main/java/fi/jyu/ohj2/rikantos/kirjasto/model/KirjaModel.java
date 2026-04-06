@@ -49,7 +49,6 @@ public class KirjaModel {
     public BooleanProperty lainattuProperty() {return this.lainattu;}
 
     public ObservableList<LainausModel> getObservableLainaukset() {return observableLainaukset.get();}
-    public void setObservableLainaukset(ObservableList<LainausModel> observableLainaukset) {this.observableLainaukset.set(observableLainaukset);}
     public ListProperty<LainausModel> observableLainauksetProperty() {return this.observableLainaukset;}
 
     public List<LainausModel> getLainaukset() { return lainaukset; }
@@ -69,7 +68,7 @@ public class KirjaModel {
     /**
      * Lisää tämän kirjan lainaukset listaan merkinnän uudesta lainauksesta ja
      * samalla kirjoittaa ObservableList tyyppiseen ListProperty listaan
-     * @param lainaus
+     * @param lainaus LainausModel objekti
      */
     public void lisaaLainauksiin(LainausModel lainaus) {
         if (lainaus == null) return;
@@ -79,7 +78,7 @@ public class KirjaModel {
 
     /**
      * toString metodi kirjalle, debuggaukseen kätevä.
-     * @return
+     * @return Palauttaa nimen, tekijän ja ISBN
      */
     @Override
     public String toString() {

@@ -7,10 +7,7 @@ import fi.jyu.ohj2.rikantos.kirjasto.model.LainakokoelmaModel;
 import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
 import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonKirjaRepository;
 import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonLainausRepository;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -88,6 +85,15 @@ public class KirjalistaController implements Initializable {
         lainattuSarake.setCellValueFactory(cd -> cd.getValue().lainattuProperty());
         kirjaTaulu.getColumns().add(lainattuSarake);
 
+        TableColumn<KirjaModel, String> lainaajaSarake = new TableColumn<>("Viimeisin lainaaja");
+        lainaajaSarake.setCellValueFactory(cd -> {
+            if (!cd.getValue().getLainaukset().isEmpty()){
+                return cd.getValue().getLainaukset().getLast().lainaajaNimiProperty();
+            }
+            return null;
+        });
+        kirjaTaulu.getColumns().add(lainaajaSarake);
+
         kirjaTaulu.setRowFactory(kirja -> {
             TableRow<KirjaModel> row = new TableRow<>();
 
@@ -140,6 +146,10 @@ public class KirjalistaController implements Initializable {
             return;
         }
 
+        nimi = nimi.trim();
+        tekija = tekija.trim();
+        isbn = isbn.trim();
+
         kirjakokoelmaModel.lisaaKirja(nimi, tekija, isbn);
 
         nimiTxt.clear();
@@ -174,9 +184,11 @@ public class KirjalistaController implements Initializable {
 
         // Luodaan uusi kirja
         KirjaModel uudetTiedot = new KirjaModel(nimi, tekija, isbn);
+        uudetTiedot.setLainaukset(valittuKirja.getLainaukset());
+        uudetTiedot.setLainattu(valittuKirja.getLainattu());
 
         lainakokoelmaModel.paivitaTietynKirjanLainaukset(valittuKirja, uudetTiedot);
-        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot, valittuKirja.getNimi(), valittuKirja.getTekija());
+        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot, valittuKirja.getNimi(), valittuKirja.getTekija(), false);
     }
 
     /**

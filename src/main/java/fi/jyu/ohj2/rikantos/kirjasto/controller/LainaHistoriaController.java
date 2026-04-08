@@ -21,7 +21,7 @@ public class LainaHistoriaController implements Initializable {
     @FXML
     private TableView<LainausModel> lainausHistoriaTable;
 
-    KirjakokoelmaModel kirjakokoelma = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
+    private final KirjakokoelmaModel kirjakokoelma = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
 
     private KirjaModel tarkasteltavaKirja;
 
@@ -63,11 +63,7 @@ public class LainaHistoriaController implements Initializable {
         palautettuSarake.setCellValueFactory(cd -> cd.getValue().palautettuPvmProperty());
         lainausHistoriaTable.getColumns().add(palautettuSarake);
 
-        lainausHistoriaTable.setRowFactory(_ -> {
-            TableRow<LainausModel> row = new TableRow<>();
-
-            return row;
-        });
+        lainausHistoriaTable.setRowFactory(_ -> new TableRow<>());
 
         kirjakokoelma.lataa();
     }

@@ -6,7 +6,6 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,22 +33,22 @@ public class KirjakokoelmaModel {
         return kirjat;
     }
 
-    public ObservableList<KirjaModel> getLainaamattomatKirjat() {
-        return new FilteredList<>(this.getKirjat(), kirja -> !kirja.getLainattu());
-    }
-
     /**
      * Hakee tietyn kirjan listasta syötetyn kirjan perusteella
      * @param tavoiteltuKirja - Kirja jonka sijainti halutaan löytää listasta
      * @return Kirjan indeksi
      */
-    public int getTiettyKirja(KirjaModel tavoiteltuKirja, String nimi, String tekija) {
+    public int getTiettyKirja(KirjaModel tavoiteltuKirja, String nimi, String tekija, String isbn) {
         tallenna();
         lataa();
 
         for(KirjaModel kirja : kirjat){
-            if ((tavoiteltuKirja.getNimi().equals(kirja.getNimi()) && tavoiteltuKirja.getTekija().equals(kirja.getTekija()))
-                || (nimi.equals(kirja.getNimi()) && tekija.equals(kirja.getTekija()))){
+            if ((tavoiteltuKirja.getNimi().equals(kirja.getNimi())
+                    && tavoiteltuKirja.getTekija().equals(kirja.getTekija())
+                    && tavoiteltuKirja.getIsbn().equals(kirja.getIsbn()))
+                    || (nimi.equals(kirja.getNimi())
+                    && tekija.equals(kirja.getTekija()))
+                    && isbn.equals(kirja.getIsbn())){
                 //IO.println("Indeksi on: " +kirjat.indexOf(kirja));
                 return kirjat.indexOf(kirja);
             }
@@ -113,10 +112,10 @@ public class KirjakokoelmaModel {
      * @param vanhaKirja - Kirja, jota halutaan muokata
      * @param uusiKirja - Kirja, joka asetetaan vanhan kirjan tilalle
      */
-    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja, String nimi, String tekija, boolean palautettu) {
+    public void paivitaKirja(KirjaModel vanhaKirja, KirjaModel uusiKirja, String nimi, String tekija, String isbn, boolean palautettu) {
         if (vanhaKirja == null) return;
         // Etsitään kirjan indeksi kokoelmasta, jos ei löydy, palautetaan -1 ja palataan
-        int listanKirjaIndeksi = getTiettyKirja(vanhaKirja, nimi, tekija);
+        int listanKirjaIndeksi = getTiettyKirja(vanhaKirja, nimi, tekija, isbn);
         //IO.println("Päivitetään: " + listanKirjaIndeksi);
         if (listanKirjaIndeksi == -1) {
             //IO.println("Listasta ei löydetty kirjaa!");

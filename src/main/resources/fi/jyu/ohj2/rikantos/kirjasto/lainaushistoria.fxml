@@ -7,6 +7,6 @@
 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fi.jyu.ohj2.rikantos.kirjasto.controller.LainaHistoriaController">
    <children>
       <Label alignment="CENTER" text="Lainaushistoria" />
-      <TableView fx:id="lainausHistoriaTable" prefHeight="200.0" prefWidth="200.0" />
+      <TableView fx:id="lainausHistoriaTable" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
    </children>
 </VBox>

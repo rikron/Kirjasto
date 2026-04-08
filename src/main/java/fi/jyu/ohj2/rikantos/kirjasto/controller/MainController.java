@@ -8,7 +8,6 @@ import fi.jyu.ohj2.rikantos.kirjasto.model.LainausModel;
 import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonKirjaRepository;
 import fi.jyu.ohj2.rikantos.kirjasto.persistence.JsonLainausRepository;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 
@@ -23,7 +22,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -44,9 +42,6 @@ public class MainController implements Initializable {
     private Button palautaKirjaBtn;
 
     @FXML
-    private Button siirryKirjaListaanBtn;
-
-    @FXML
     private TextField lainaajanNimiTxt;
 
     @Override
@@ -55,7 +50,7 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    void handleSiirryKirjalistaan(MouseEvent event) {
+    void handleSiirryKirjalistaan() {
         try {
             /* 1 */ FXMLLoader loader = new FXMLLoader(App.class.getResource("kirjalista.fxml"));
             /* 1 */ Parent root = loader.load();
@@ -65,8 +60,8 @@ public class MainController implements Initializable {
             /* 2 */ dialogi.setScene(scene);
 
             /* 3 */ dialogi.setTitle("Kirjalista");
-            /* 3 */ dialogi.setMinWidth(400);
-            /* 3 */ dialogi.setMinHeight(300);
+            /* 3 */ dialogi.setMinWidth(800);
+            /* 3 */ dialogi.setMinHeight(500);
             /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
 
             /* 4 */ dialogi.showAndWait();
@@ -103,7 +98,7 @@ public class MainController implements Initializable {
         lainattuSarake.setCellValueFactory(cd -> cd.getValue().lainattuProperty().asString());
         lainattavissaTable.getColumns().add(lainattuSarake);
 
-        lainattavissaTable.setRowFactory(kirja -> {
+        lainattavissaTable.setRowFactory(_ -> {
             TableRow<KirjaModel> row = new TableRow<>();
 
             // Lisätään uudelle riville tapahtumakäsittelijä klikkauksille
@@ -147,19 +142,11 @@ public class MainController implements Initializable {
         palautusSarake.setCellValueFactory(cd -> cd.getValue().palautusPvmProperty());
         lainaamatTable.getColumns().add(palautusSarake);
 
-        lainaamatTable.setRowFactory(lainaus -> {
-            TableRow<LainausModel> row = new TableRow<>();
+        lainaamatTable.setRowFactory(_ -> new TableRow<>());
 
-            return row;
-        });
+        lainaaKirjaBtn.setOnAction(_ -> lainaaKirja());
 
-        lainaaKirjaBtn.setOnAction(ev -> {
-            lainaaKirja();
-        });
-
-        palautaKirjaBtn.setOnAction(ev -> {
-            palautaKirja();
-        });
+        palautaKirjaBtn.setOnAction(_ -> palautaKirja());
 
         lainakokoelmaModel.lataa();
         kirjakokoelmaModel.lataa();
@@ -213,7 +200,7 @@ public class MainController implements Initializable {
         //IO.println("Kirja palautakirja funktiossa: " + vanhaKirja);
 
         // Päivitetään kirjankokoelmaan status
-        kirjakokoelmaModel.paivitaKirja(vanhaKirja, uusiKirja, valittuLainaus.getKirjaNimi(), valittuLainaus.getTekija(), true);
+        kirjakokoelmaModel.paivitaKirja(vanhaKirja, uusiKirja, valittuLainaus.getKirjaNimi(), valittuLainaus.getTekija(), valittuLainaus.getIsbn(), true);
         // Poistetaan lainaus käyttäjän omasta lainakokoelmasta
         lainakokoelmaModel.poistaLainaus(valittuLainaus);
     }
@@ -235,7 +222,7 @@ public class MainController implements Initializable {
             /* 2 */ dialogi.setScene(scene);
 
             /* 3 */ dialogi.setTitle("Lainahistoria");
-            /* 3 */ dialogi.setMinWidth(600);
+            /* 3 */ dialogi.setMinWidth(700);
             /* 3 */ dialogi.setMinHeight(500);
             /* 3 */ dialogi.initModality(Modality.APPLICATION_MODAL);
 

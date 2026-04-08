@@ -13,11 +13,11 @@ public class KirjaModel {
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty isbn = new SimpleStringProperty("");
     private List<LainausModel> lainaukset = new ArrayList<>();
-    private BooleanProperty lainattu = new SimpleBooleanProperty(false);
+    private final BooleanProperty lainattu = new SimpleBooleanProperty(false);
 
     // Jätetään observableLainaukset Jacksonin ulkopuolelle, sillä se ei ymmärrä sen tyyppiä
     @JsonIgnore
-    private ListProperty<LainausModel> observableLainaukset = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private final ListProperty<LainausModel> observableLainaukset = new SimpleListProperty<>(FXCollections.observableArrayList());
 
     // Jackson vaattii myös tyhjän version mallista
     @SuppressWarnings("unused")

@@ -15,7 +15,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -49,17 +48,10 @@ public class KirjalistaController implements Initializable {
     @FXML
     private TextField tekijaTxt;
 
+    private final KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
+    private final LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel(new JsonLainausRepository(Path.of("lainaukset.json")));
 
-
-    @FXML
-    void handlePoistaKirja(MouseEvent event) {
-        poistaValittu();
-    }
-
-    private KirjakokoelmaModel kirjakokoelmaModel = new KirjakokoelmaModel(new JsonKirjaRepository(Path.of("kirjat.json")));
-    private LainakokoelmaModel lainakokoelmaModel = new LainakokoelmaModel(new JsonLainausRepository(Path.of("lainaukset.json")));
-
-    private ObservableList<LainausModel> lainaukset = lainakokoelmaModel.getLainaukset();
+    private final ObservableList<LainausModel> lainaukset = lainakokoelmaModel.getLainaukset();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -94,7 +86,7 @@ public class KirjalistaController implements Initializable {
         });
         kirjaTaulu.getColumns().add(lainaajaSarake);
 
-        kirjaTaulu.setRowFactory(kirja -> {
+        kirjaTaulu.setRowFactory(_ -> {
             TableRow<KirjaModel> row = new TableRow<>();
 
             // Lisätään uudelle riville tapahtumakäsittelijä klikkauksille
@@ -112,13 +104,9 @@ public class KirjalistaController implements Initializable {
             return row;
         });
 
-        lisaaKirja.setOnAction(ev -> {
-            lisaaKirja();
-        });
-
-        muokkaaKirjaa.setOnAction(ev -> {
-            muokkaaKirjaa();
-        });
+        lisaaKirja.setOnAction(_ -> lisaaKirja());
+        muokkaaKirjaa.setOnAction(_ -> muokkaaKirjaa());
+        poistaKirja.setOnAction(_ -> poistaValittu());
 
         // Ladataan kirjakokoelman tiedot tiedostosta
         kirjakokoelmaModel.lataa();
@@ -188,7 +176,7 @@ public class KirjalistaController implements Initializable {
         uudetTiedot.setLainattu(valittuKirja.getLainattu());
 
         lainakokoelmaModel.paivitaTietynKirjanLainaukset(valittuKirja, uudetTiedot);
-        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot, valittuKirja.getNimi(), valittuKirja.getTekija(), false);
+        kirjakokoelmaModel.paivitaKirja(valittuKirja, uudetTiedot, valittuKirja.getNimi(), valittuKirja.getTekija(), valittuKirja.getIsbn(), false);
     }
 
     /**

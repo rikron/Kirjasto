@@ -14,14 +14,14 @@ public class LainausModel {
 
     private final StringProperty tekija = new SimpleStringProperty("");
     private final StringProperty kirjaNimi = new SimpleStringProperty("");
-    private BooleanProperty lainattu = new SimpleBooleanProperty(false);
+    private final BooleanProperty lainattu = new SimpleBooleanProperty(false);
     private final StringProperty lainaajaNimi = new SimpleStringProperty("");
-    private StringProperty isbn = new SimpleStringProperty("");
-    private ObjectProperty<LocalDateTime> lainattuPvm = new SimpleObjectProperty<>();
-    private ObjectProperty<LocalDateTime> palautusPvm = new SimpleObjectProperty<>();
-    private ObjectProperty<LocalDateTime> palautettuPvm = new SimpleObjectProperty<>();
+    private final StringProperty isbn = new SimpleStringProperty("");
+    private final ObjectProperty<LocalDateTime> lainattuPvm = new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDateTime> palautusPvm = new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDateTime> palautettuPvm = new SimpleObjectProperty<>();
 
-    // Jacksonille tyhjä kontstruktori
+    // Jacksonille tyhjä konstruktori
     @SuppressWarnings("unused")
     public LainausModel() {
     }
@@ -50,18 +50,22 @@ public class LainausModel {
     public void setTekija(String tekija) {this.tekija.set(tekija);}
     public StringProperty tekijaProperty() {return tekija;}
 
+    @SuppressWarnings({"unused"})
     public boolean getLainattu() {return lainattu.get();}
     public void setLainattu(boolean lainattu) {this.lainattu.set(lainattu);}
+    @SuppressWarnings({"unused"})
     public BooleanProperty lainattuProperty() {return lainattu;}
 
     public String getLainaajaNimi() {return lainaajaNimi.get();}
     public void setLainaajaNimi(String lainaajaNimi) {this.lainaajaNimi.set(lainaajaNimi);}
     public StringProperty lainaajaNimiProperty() {return lainaajaNimi;}
 
+    @SuppressWarnings({"unused"})
     public LocalDateTime getLainattuPvm() {return lainattuPvm.get();}
     public void setLainattuPvm(LocalDateTime lainattuPvm) {this.lainattuPvm.set(lainattuPvm);}
     public ObjectProperty<LocalDateTime> lainattuPvmProperty() {return lainattuPvm;}
 
+    @SuppressWarnings({"unused"})
     public LocalDateTime getPalautettuPvm() {return palautettuPvm.get();}
     public void setPalautettuPvm(LocalDateTime palautettuPvm) {this.palautettuPvm.set(palautettuPvm);}
     public ObjectProperty<LocalDateTime> palautettuPvmProperty() {return palautettuPvm;}
